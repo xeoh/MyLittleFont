@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_font_maker"
+            android:icon="@drawable/ic_menu_font"
+            android:title="Font Maker" />
+        <item
+            android:id="@+id/nav_font_viewer"
+            android:icon="@drawable/ic_menu_table"
+            android:title="Font Viewer" />
+    </group>
+
+    <item android:title="About">
+        <menu>
+            <item
+                android:id="@+id/nav_about"
+                android:icon="@drawable/ic_menu_about"
+                android:title="About Us" />
+            <item
+                android:id="@+id/nav_license"
+                android:icon="@drawable/ic_menu_license"
+                android:title="License" />
+            <item
+                android:id="@+id/nav_github"
+                android:icon="@drawable/ic_menu_github"
+                android:title="Github" />
+        </menu>
+    </item>
+
+</menu>
