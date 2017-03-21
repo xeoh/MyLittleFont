@@ -1,7 +1,7 @@
 ### My Little Font
 
 -------------------
-My Little Font is easy-to-use Hangul(Korean Alphabet) font generator.
+My Little Font is easy-to-use Hangul(Korean Alphabet) Font generator.
 
 -------------------
 ### Our work flow
@@ -19,9 +19,9 @@ My Little Font is easy-to-use Hangul(Korean Alphabet) font generator.
 #### After Commit
 - Make a PR(Pull Request), then rest of team-mate will review your code.
 
-- Reviewer will comment with :+1 as soon as they finish reviewing.
+- Reviewer will comment with :+1:(```:+1:```) as soon as they finish reviewing.
 
-- Last review will accept PR if 2 or more :+1 has been commented.
+- Last review will accept PR if 2 or more :+1:(```:+1:```) has been commented.
 
 #### Summary
 - Issue / brach -> checkstyle / commit -> PR / review -> merge
