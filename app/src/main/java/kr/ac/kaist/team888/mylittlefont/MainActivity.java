@@ -1,4 +1,4 @@
-package kr.ac.kaist.team88.mylittlefont;
+package kr.ac.kaist.team888.mylittlefont;
 
 import android.app.Fragment;
 import android.app.FragmentManager;

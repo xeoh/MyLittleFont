@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="kr.ac.kaist.team88.mylittlefont">
+    package="kr.ac.kaist.team888.mylittlefont">
 
     <application
         android:allowBackup="true"
