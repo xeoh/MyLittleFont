@@ -79,7 +79,7 @@ public class Point2D {
   }
 
   /**
-   * Scalar multiplication on point2D with factor
+   * Scalar multiplication on point2D with factor.
    *
    * @param factor value to multiply
    * @return new Point(x0 * k, y0 * k)
