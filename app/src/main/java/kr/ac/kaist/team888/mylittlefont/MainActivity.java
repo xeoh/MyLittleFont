@@ -13,6 +13,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import kr.ac.kaist.team888.util.JsonLoader;
+
 public class MainActivity extends AppCompatActivity
     implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -38,6 +40,8 @@ public class MainActivity extends AppCompatActivity
     fontMakerFragment = new FontMakerFragment();
     fontViewerFragment = new FontViewerFragment();
     changeFragment(fontMakerFragment);
+
+    JsonLoader.getInstance().checkPermission(this);
   }
 
   @Override
