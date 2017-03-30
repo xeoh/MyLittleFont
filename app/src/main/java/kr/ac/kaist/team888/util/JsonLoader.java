@@ -25,7 +25,7 @@ public class JsonLoader {
   private JsonElement data;
 
   private JsonLoader() {
-    data = loadFile();
+    loadFile();
   }
 
   private static class Singleton {
