@@ -15,7 +15,7 @@ import android.util.Log;
  */
 public class Alert {
   private static final String TAG = "DEBUG";
-  private static final String FORMAT = "[%s]: %s\n(%s)";
+  private static final String FORMAT = "[%s]: %s";
 
   /**
    * Log.d() wrapper method.
@@ -30,9 +30,11 @@ public class Alert {
   public static void log(Object caller, String msg) {
     String className = caller.getClass().getSimpleName();
 
-    String callerTrace = Thread.currentThread().getStackTrace()[2].toString();
+    StackTraceElement[] traces = Thread.currentThread().getStackTrace();
+    String callerTrace = traces[3].toString();
 
-    Log.d(TAG, String.format(FORMAT, className, msg, callerTrace));
+    Log.d(TAG, String.format(FORMAT, className, msg));
+    Log.d(TAG, callerTrace);
   }
 
   /**
