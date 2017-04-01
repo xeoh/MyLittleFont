@@ -83,16 +83,4 @@ public class JsonLoader {
       e.printStackTrace();
     }
   }
-
-  /**
-   * Check external storage permission.
-   *
-   * @param activity target activity
-   */
-  public void checkPermission(Activity activity) {
-    ActivityCompat.requestPermissions(activity,
-            new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-    ActivityCompat.requestPermissions(activity,
-            new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
-  }
 }
