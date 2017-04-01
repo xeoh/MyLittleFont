@@ -1,16 +1,12 @@
 package kr.ac.kaist.team888.util;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
-import android.Manifest;
-import android.app.Activity;
 import android.os.Environment;
-import android.support.v4.app.ActivityCompat;
 
-import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -21,10 +17,18 @@ import java.io.IOException;
  * <p>This class for convert json file using <a href="https://github.com/google/gson">gson</a> library.
  */
 public class JsonLoader {
-  private static final String DEFAULT_FILE_PATH = "/DefaultData.json";
-  private JsonElement data;
+  // full path: /storage/emulated/0/Download/MyLittleFont/DefaultData.json
+  private static final String DEFAULT_FILE_PATH = "/MyLittleFont/DefaultData.json";
+  private static final String CHARACTERS_KEY = "characters";
+
+  private JsonObject data;
+  private String path;
+  private Gson gson;
 
   private JsonLoader() {
+    path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+        + DEFAULT_FILE_PATH;
+    gson = new Gson();
     loadFile();
   }
 
@@ -46,41 +50,52 @@ public class JsonLoader {
    *
    * @return default data
    */
-  public JsonElement getData() {
+  public JsonObject getData() {
     return Singleton.instance.data;
   }
 
   private void loadFile() {
-    Gson gson = new GsonBuilder().create();
-
     try {
-      String path = Environment.getExternalStorageDirectory().getAbsolutePath() + DEFAULT_FILE_PATH;
-      FileReader fileReader = new FileReader(path);
-
-      BufferedReader bufferedReader = new BufferedReader(fileReader);
-
-      this.data = gson.fromJson(bufferedReader, JsonElement.class);
-    } catch (IOException e) {
-      e.printStackTrace();
+      JsonParser parser = new JsonParser();
+      JsonElement jsonElement = parser.parse(new FileReader(path));
+      data = jsonElement.getAsJsonObject();
+    } catch (IOException ioe) {
+      Alert.log(this, ioe.getMessage());
     }
   }
 
   /**
    * Save data as file.
-   *
-   * @param jsonElement target data
    */
-  public void saveFile(JsonElement jsonElement) {
-    Gson gson = new GsonBuilder().create();
-
-    String jsonString = gson.toJson(jsonElement);
+  public void saveFile() {
+    String jsonString = gson.toJson(data);
 
     try {
-      FileWriter writer = new FileWriter(DEFAULT_FILE_PATH);
+      FileWriter writer = new FileWriter(path);
       writer.write(jsonString);
       writer.close();
-    } catch (IOException e) {
-      e.printStackTrace();
+    } catch (IOException ioe) {
+      Alert.log(this, ioe.getMessage());
     }
+  }
+
+  /**
+   * Get character data.
+   *
+   * @param key character name i.e "Mieum"
+   * @return character data
+   */
+  public JsonObject getCharData(String key) {
+    return data.getAsJsonObject(CHARACTERS_KEY).getAsJsonObject(key);
+  }
+
+  /**
+   * Set character data.
+   *
+   * @param key character name i.e. "Mieum"
+   * @param charData data to set
+   */
+  public void setCharData(String key, JsonObject charData) {
+    data.getAsJsonObject(CHARACTERS_KEY).add(key, charData);
   }
 }
