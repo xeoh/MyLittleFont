@@ -11,15 +11,21 @@ import kr.ac.kaist.team888.util.JsonLoader;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 
 /**
  * Abstract Class for each individual characters.
  */
-abstract class Character {
+public abstract class Character {
   private static final String NO_DATA_ERROR = "No Json Data for character \'%s\'";
-  protected static final String STROKE_KEY = "Strokes";
-  protected ArrayList<Stroke> strokes;
+  public static final int X_RANGE_MIN = 0;
+  public static final int X_RANGE_MAX = 940;
+  public static final int Y_RANGE_MIN = -200;
+  public static final int Y_RANGE_MAX = 800;
+
+  private static final String OUTER_STROKES_KEY = "OuterStrokes";
+  private static final String INNER_STROKES_KEY = "InnerStrokes";
+  private ArrayList<ArrayList<Stroke>> outerStrokes;
+  private ArrayList<ArrayList<Stroke>> innerStrokes;
   protected JsonObject data;
 
   /**
@@ -37,21 +43,31 @@ abstract class Character {
     }
 
     Gson gson = new Gson();
-    Type collectionType = new TypeToken<Collection<Stroke>>(){}.getType();
-    strokes = gson.fromJson(data.getAsJsonArray(STROKE_KEY), collectionType);
+    Type collectionType = new TypeToken<Collection<Collection<Stroke>>>(){}.getType();
+
+    outerStrokes = gson.fromJson(data.getAsJsonArray(OUTER_STROKES_KEY), collectionType);
+    innerStrokes = gson.fromJson(data.getAsJsonArray(INNER_STROKES_KEY), collectionType);
   }
 
   /**
-   * Get deep copied array of stroke.
+   * Get array of outer strokes.
    *
-   * <p> Returns deep copied object, since basic data should be consistent.
+   * <p> Do not modify data of array. This returns reference of data.
    *
-   * @return Array list of stroke.
+   * @return 2D Array list of outer strokes.
    */
-  public ArrayList<Stroke> getStorkes() {
-    ArrayList<Stroke> copiedStroke = new ArrayList<>(strokes);
-    Collections.copy(copiedStroke, strokes);
+  public ArrayList<ArrayList<Stroke>> getOuterStorkes() {
+    return outerStrokes;
+  }
 
-    return copiedStroke;
+  /**
+   * Get array of inner strokes.
+   *
+   * <p> Do not modify data of array. This returns reference of data.
+   *
+   * @return 2D Array list of outer strokes.
+   */
+  public ArrayList<ArrayList<Stroke>> getInnerStrokes() {
+    return innerStrokes;
   }
 }
