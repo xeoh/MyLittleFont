@@ -16,8 +16,12 @@ import java.util.Collections;
 /**
  * Abstract Class for each individual characters.
  */
-abstract class Character {
+public abstract class Character {
   private static final String NO_DATA_ERROR = "No Json Data for character \'%s\'";
+  public static final int X_RANGE_MIN = 0;
+  public static final int X_RANGE_MAX = 940;
+  public static final int Y_RANGE_MIN = -200;
+  public static final int Y_RANGE_MAX = 800;
   protected static final String STROKE_KEY = "Strokes";
   protected ArrayList<Stroke> strokes;
   protected JsonObject data;
