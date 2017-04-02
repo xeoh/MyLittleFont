@@ -1,12 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.percent.PercentFrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#95b1ff">
+    android:layout_height="match_parent">
 
-    <TextView
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:orientation="vertical"
+        app:layout_widthPercent="30%"
+        app:layout_heightPercent="100%"
+        android:background="#bbbbbb">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="Sample Text"/>
+
+        <SeekBar
+            android:layout_margin="5dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:progress="50"/>
+    </LinearLayout>
+
+    <kr.ac.kaist.team888.mylittlefont.FontCanvasView
+        android:id="@+id/fontCanvas"
+        app:layout_widthPercent="70%"
+        app:layout_heightPercent="100%"
+        app:layout_marginLeftPercent="30%"
+        android:background="#f0f0f0"/>
+
+    <Switch
+        android:id="@+id/xrayBtn"
+        app:layout_widthPercent="8%"
+
         android:layout_height="wrap_content"
-        android:text="Hello, Font Maker Fragment"/>
+        app:layout_marginLeftPercent="90%"
+        android:text="XRAY" />
 
-</RelativeLayout>
+</android.support.percent.PercentFrameLayout>
