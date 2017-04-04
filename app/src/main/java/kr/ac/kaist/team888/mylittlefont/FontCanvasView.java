@@ -8,7 +8,7 @@ import android.graphics.Path;
 import android.util.AttributeSet;
 import android.view.View;
 
-import kr.ac.kaist.team888.character.Character;
+import kr.ac.kaist.team888.hangulcharacter.HangulCharacter;
 import kr.ac.kaist.team888.core.Point2D;
 import kr.ac.kaist.team888.core.Stroke;
 
@@ -80,8 +80,8 @@ public class FontCanvasView extends View {
     controlPaint.setColor(Color.GREEN);
     controlPaint.setStyle(Paint.Style.FILL);
 
-    srcMin = new Point2D(Character.X_RANGE_MIN, Character.Y_RANGE_MIN);
-    srcMax = new Point2D(Character.X_RANGE_MAX, Character.Y_RANGE_MAX);
+    srcMin = new Point2D(HangulCharacter.X_RANGE_MIN, HangulCharacter.Y_RANGE_MIN);
+    srcMax = new Point2D(HangulCharacter.X_RANGE_MAX, HangulCharacter.Y_RANGE_MAX);
   }
 
   @Override
@@ -144,14 +144,14 @@ public class FontCanvasView extends View {
 
   private void setDstCoordinate() {
     if (height > width) {
-      float val = width * (Character.Y_RANGE_MAX - Character.Y_RANGE_MIN)
-          / (Character.X_RANGE_MAX - Character.X_RANGE_MIN);
+      float val = width * (HangulCharacter.Y_RANGE_MAX - HangulCharacter.Y_RANGE_MIN)
+          / (HangulCharacter.X_RANGE_MAX - HangulCharacter.X_RANGE_MIN);
 
       dstMin = new Point2D(0, (height - val) / 2 + val);
       dstMax = new Point2D(width, (height - val) / 2);
     } else {
-      float val = height * (Character.X_RANGE_MAX - Character.X_RANGE_MIN)
-          / (Character.Y_RANGE_MAX - Character.Y_RANGE_MIN);
+      float val = height * (HangulCharacter.X_RANGE_MAX - HangulCharacter.X_RANGE_MIN)
+          / (HangulCharacter.Y_RANGE_MAX - HangulCharacter.Y_RANGE_MIN);
 
       dstMin = new Point2D((width - val) / 2, height);
       dstMax = new Point2D((width - val) / 2  + val, 0);

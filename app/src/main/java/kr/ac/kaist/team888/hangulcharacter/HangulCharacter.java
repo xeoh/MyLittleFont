@@ -1,4 +1,4 @@
-package kr.ac.kaist.team888.character;
+package kr.ac.kaist.team888.hangulcharacter;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -13,9 +13,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 /**
- * Abstract Class for each individual characters.
+ * Abstract Class for each individual Hangul characters.
  */
-public abstract class Character {
+public abstract class HangulCharacter {
   private static final String NO_DATA_ERROR = "No Json Data for character \'%s\'";
   public static final int X_RANGE_MIN = 0;
   public static final int X_RANGE_MAX = 940;
@@ -33,7 +33,7 @@ public abstract class Character {
    *
    * <p> Load {@link Stroke} data by class name. Class name should match to Json file's key.
    */
-  public Character() {
+  public HangulCharacter() {
     String className = this.getClass().getSimpleName();
     data = JsonLoader.getInstance().getCharData(className);
 
