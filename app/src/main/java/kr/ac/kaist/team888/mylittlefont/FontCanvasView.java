@@ -8,9 +8,9 @@ import android.graphics.Path;
 import android.util.AttributeSet;
 import android.view.View;
 
-import kr.ac.kaist.team888.hangulcharacter.HangulCharacter;
 import kr.ac.kaist.team888.core.Point2D;
 import kr.ac.kaist.team888.core.Stroke;
+import kr.ac.kaist.team888.hangulcharacter.HangulCharacter;
 
 import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.MatrixUtils;
