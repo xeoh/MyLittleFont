@@ -1,5 +1,8 @@
 package kr.ac.kaist.team888.core;
 
+import java.util.Arrays;
+import java.util.Collections;
+
 /**
  * Stroke represent Quadratic Bézier curves and properties related to transformation of font.
  *
@@ -56,6 +59,46 @@ public class Stroke {
     this.startPoint = startPoint;
     this.controlPoint = controlPoint;
     this.endPoint = endPoint;
+  }
+
+  /**
+   * Returns the minimum value in x-axis among the start, the end, and the control point.
+   *
+   * @return the minimum value of the stroke in x-axis.
+   */
+  public float getMinX() {
+    Float[] arr = {startPoint.getX(), controlPoint.getX(), endPoint.getX()};
+    return Collections.min(Arrays.asList(arr));
+  }
+
+  /**
+   * Returns the maximum value in x-axis among the start, the end, and the control point.
+   *
+   * @return the maximum value of the stroke in x-axis.
+   */
+  public float getMaxX() {
+    Float[] arr = {startPoint.getX(), controlPoint.getX(), endPoint.getX()};
+    return Collections.max(Arrays.asList(arr));
+  }
+
+  /**
+   * Returns the minimum value in y-axis among the start, the end, and the control point.
+   *
+   * @return the minimum value of the stroke in y-axis.
+   */
+  public float getMinY() {
+    Float[] arr = {startPoint.getY(), controlPoint.getY(), endPoint.getY()};
+    return Collections.min(Arrays.asList(arr));
+  }
+
+  /**
+   * Returns the maximum value in y-axis among the start, the end, and the control point.
+   *
+   * @return the maximum value of the stroke in y-axis.
+   */
+  public float getMaxY() {
+    Float[] arr = {startPoint.getY(), controlPoint.getY(), endPoint.getY()};
+    return Collections.max(Arrays.asList(arr));
   }
 
   /**

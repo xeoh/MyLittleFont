@@ -81,6 +81,8 @@ public class HangulDecomposer {
   // This method should be deleted and replaced right after CharacterLoader is implemented later.
   private static HangulCharacter temp_getFinal(int index) {
     switch (index) {
+      case 15:
+        return new Mieum();
       default:
         Alert.log(HangulDecomposer.class, "Input final is not supported yet.");
         return null;

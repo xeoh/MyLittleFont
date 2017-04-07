@@ -9,8 +9,7 @@ import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 
-import kr.ac.kaist.team888.hangulcharacter.HangulCharacter;
-import kr.ac.kaist.team888.hangulcharacter.Mieum;
+import kr.ac.kaist.team888.locator.Locator;
 
 public class FontMakerFragment extends Fragment {
   private FontCanvasView fontCanvasView;
@@ -28,8 +27,8 @@ public class FontMakerFragment extends Fragment {
     super.onViewCreated(view, savedInstanceState);
 
     fontCanvasView = (FontCanvasView) view.getRootView().findViewById(R.id.fontCanvas);
-    HangulCharacter character = new Mieum();
-    fontCanvasView.drawStrokes(character.getOuterStorkes(), character.getInnerStrokes());
+    Locator locator = new Locator('맘');
+    fontCanvasView.drawStrokes(locator.getOuterStrokes(), locator.getInnerStrokes());
 
     Switch xrayBtn = (Switch) view.getRootView().findViewById(R.id.xrayBtn);
     xrayBtn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
