@@ -32,6 +32,7 @@ dependencies {
     compile 'com.google.code.gson:gson:2.8.0'
     compile 'com.android.support:percent:25.2.0'
     compile group: 'org.apache.commons', name: 'commons-math3', version: '3.0'
+    compile group: 'com.google.guava', name: 'guava', version: '20.0'
 }
 
 checkstyle {
