@@ -35,7 +35,7 @@ public abstract class HangulCharacter {
    *
    * <p> Load {@link Stroke} data by class name. Class name should match to Json file's key.
    */
-  public HangulCharacter() {
+  protected HangulCharacter() {
     String className = this.getClass().getSimpleName();
     data = JsonLoader.getInstance().getCharData(className);
 

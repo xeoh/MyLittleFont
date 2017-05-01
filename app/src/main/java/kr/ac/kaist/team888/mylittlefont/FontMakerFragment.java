@@ -9,7 +9,9 @@ import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 
+import kr.ac.kaist.team888.hangulcharacter.HangulCharacter;
 import kr.ac.kaist.team888.locator.Locator;
+import kr.ac.kaist.team888.util.HangulDecomposer;
 
 public class FontMakerFragment extends Fragment {
   private FontCanvasView fontCanvasView;
