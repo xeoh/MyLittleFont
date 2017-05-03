@@ -1,104 +1,103 @@
 package kr.ac.kaist.team888.core;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 
 /**
- * Stroke represent Quadratic Bézier curves and properties related to transformation of font.
+ * Stroke represent Bézier curve and properties of Bézier curve.
  *
- * <p> <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/B%C3%A9zier_2_big.svg/360px-B%C3%A9zier_2_big.svg.png"/>
- *
- * <p> Terms for each controlPoints (p0, p1, p2).
- *
- *   <ul> p0: startPoint</ul>
- *   <ul> p1: controlPoint</ul>
- *   <ul> p2: endPoint</ul>
- *
- * <p>Stroke can be constructed by Json data.
- *
- * <p> Json Format is like this<br>
- * <pre>
- * "Stroke": {
- *   "startPoint": {
- *     "x": value,
- *     "y": value
- *   },
- *   "endPoint": {
- *     "x": value,
- *     "y": value
- *   },
- *   "controlPoint": {
- *     "x": value,
- *     "y": value
- *   }
- * }
- * </pre>
- *
- * <h4> Construct using Gson </h4>
- * <pre>
- * String jsonData = "{ \"startPoint\" : { \"x\": ...";
- * JsonElement json = gson.fromJson(jsonData, JsonElement.class);
- * Stroke stroke = gson.fromJson(json, Stroke.class);
- * </pre>
- *
- * <h4> Construct from builder </h4>
- * <pre>
- * Stroke stroke = new Stroke.StrokeBuilder()
- *     .setStartPoint(new Point2D(1,1))
- *     .setEndPoint(new Point2D(3,1))
- *     .setControlPoint(new Point2D(2,1))
- *     .build();
- * </pre>
+ * <p> See more about Bézier curve from this
+ * <a href="https://en.wikipedia.org/wiki/B%C3%A9zier_curve">link</a>
  */
 public class Stroke {
   private Point2D startPoint;
   private Point2D endPoint;
-  private Point2D controlPoint;
+  private ArrayList<Point2D> controlPoints;
 
-  private Stroke(Point2D startPoint, Point2D controlPoint, Point2D endPoint) {
+  private Stroke(Point2D startPoint, Point2D endPoint, ArrayList<Point2D> controlPoints) {
     this.startPoint = startPoint;
-    this.controlPoint = controlPoint;
+    this.controlPoints = controlPoints;
     this.endPoint = endPoint;
   }
 
   /**
-   * Returns the minimum value in x-axis among the start, the end, and the control point.
+   * Returns the minimum value in x-axis among the start, the end, and the control points.
    *
    * @return the minimum value of the stroke in x-axis.
    */
   public float getMinX() {
-    Float[] arr = {startPoint.getX(), controlPoint.getX(), endPoint.getX()};
-    return Collections.min(Arrays.asList(arr));
+    if (controlPoints.isEmpty()) {
+      return Math.min(startPoint.getX(), endPoint.getX());
+    } else {
+      ArrayList<Float> controlPointsX = new ArrayList<>();
+      for (Point2D point : controlPoints) {
+        controlPointsX.add(point.getX());
+      }
+
+      float controlMinX = Collections.min(controlPointsX);
+
+      return Math.min(Math.min(startPoint.getX(), endPoint.getX()), controlMinX);
+    }
   }
 
   /**
-   * Returns the maximum value in x-axis among the start, the end, and the control point.
+   * Returns the maximum value in x-axis among the start, the end, and the control points.
    *
    * @return the maximum value of the stroke in x-axis.
    */
   public float getMaxX() {
-    Float[] arr = {startPoint.getX(), controlPoint.getX(), endPoint.getX()};
-    return Collections.max(Arrays.asList(arr));
+    if (controlPoints.isEmpty()) {
+      return Math.max(startPoint.getX(), endPoint.getX());
+    } else {
+      ArrayList<Float> controlPointsX = new ArrayList<>();
+      for (Point2D point : controlPoints) {
+        controlPointsX.add(point.getX());
+      }
+
+      float controlMaxX = Collections.max(controlPointsX);
+
+      return Math.max(Math.max(startPoint.getX(), endPoint.getX()), controlMaxX);
+    }
   }
 
   /**
-   * Returns the minimum value in y-axis among the start, the end, and the control point.
+   * Returns the minimum value in y-axis among the start, the end, and the control points.
    *
    * @return the minimum value of the stroke in y-axis.
    */
   public float getMinY() {
-    Float[] arr = {startPoint.getY(), controlPoint.getY(), endPoint.getY()};
-    return Collections.min(Arrays.asList(arr));
+    if (controlPoints.isEmpty()) {
+      return Math.min(startPoint.getY(), endPoint.getY());
+    } else {
+      ArrayList<Float> controlPointsY = new ArrayList<>();
+      for (Point2D point : controlPoints) {
+        controlPointsY.add(point.getY());
+      }
+
+      float controlMinY = Collections.min(controlPointsY);
+
+      return Math.min(Math.min(startPoint.getY(), endPoint.getY()), controlMinY);
+    }
   }
 
   /**
-   * Returns the maximum value in y-axis among the start, the end, and the control point.
+   * Returns the maximum value in y-axis among the start, the end, and the control points.
    *
    * @return the maximum value of the stroke in y-axis.
    */
   public float getMaxY() {
-    Float[] arr = {startPoint.getY(), controlPoint.getY(), endPoint.getY()};
-    return Collections.max(Arrays.asList(arr));
+    if (controlPoints.isEmpty()) {
+      return Math.max(startPoint.getY(), endPoint.getY());
+    } else {
+      ArrayList<Float> controlPointsY = new ArrayList<>();
+      for (Point2D point : controlPoints) {
+        controlPointsY.add(point.getY());
+      }
+
+      float controlMaxY = Collections.max(controlPointsY);
+
+      return Math.max(Math.max(startPoint.getY(), endPoint.getY()), controlMaxY);
+    }
   }
 
   /**
@@ -138,26 +137,31 @@ public class Stroke {
   }
 
   /**
-   * Getter of controlPoint.
+   * Getter of controlPoints.
    *
-   * @return controlPoint
+   * @return controlPoints
    */
-  public Point2D getControlPoint() {
-    return controlPoint;
+  public ArrayList<Point2D> getControlPoints() {
+    return controlPoints;
   }
 
   /**
-   * Setter of controlPoint.
+   * Setter of controlPoints.
    *
-   * @param controlPoint controlPoint ot set
+   * @param controlPoints controlPoints to set
    */
-  public void setControlPoint(Point2D controlPoint) {
-    this.controlPoint = controlPoint;
+  public void setControlPoints(ArrayList<Point2D> controlPoints) {
+    this.controlPoints = controlPoints;
   }
 
   @Override
   public String toString() {
-    return "[" + startPoint + " -> " + controlPoint + " -> " + endPoint + "]";
+    String rtn = "[" + startPoint;
+    for (Point2D ctrPoint : controlPoints) {
+      rtn += "->" + ctrPoint.toString();
+    }
+    rtn += "->" + endPoint + "]";
+    return rtn;
   }
 
   /**
@@ -166,7 +170,7 @@ public class Stroke {
   public static class StrokeBuilder {
     private Point2D startPoint;
     private Point2D endPoint;
-    private Point2D controlPoint;
+    private ArrayList<Point2D> controlPoints = new ArrayList<>();
 
     public StrokeBuilder setStartPoint(Point2D startPoint) {
       this.startPoint = startPoint;
@@ -178,13 +182,13 @@ public class Stroke {
       return this;
     }
 
-    public StrokeBuilder setControlPoint(Point2D controlPoint) {
-      this.controlPoint = controlPoint;
+    public StrokeBuilder addControlPoint(Point2D controlPoint) {
+      this.controlPoints.add(controlPoint);
       return this;
     }
 
     public Stroke build() {
-      return new Stroke(startPoint, endPoint, controlPoint);
+      return new Stroke(startPoint, endPoint, controlPoints);
     }
   }
 }

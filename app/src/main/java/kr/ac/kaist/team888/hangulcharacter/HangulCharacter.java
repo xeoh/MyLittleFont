@@ -18,15 +18,12 @@ import java.util.Collection;
  */
 public abstract class HangulCharacter {
   private static final String NO_DATA_ERROR = "No Json Data for character \'%s\'";
-  public static final int X_RANGE_MIN = 0;
-  public static final int X_RANGE_MAX = 940;
-  public static final int Y_RANGE_MIN = -200;
-  public static final int Y_RANGE_MAX = 800;
+  public static final Region ORIGIN_REGION = new Region(0, 940, -200, 800);
+  private static final float X_OFFSET = 35f;
+  private static final float Y_OFFSET = 30f;
 
-  private static final String OUTER_STROKES_KEY = "OuterStrokes";
-  private static final String INNER_STROKES_KEY = "InnerStrokes";
-  private ArrayList<ArrayList<Stroke>> outerStrokes;
-  private ArrayList<ArrayList<Stroke>> innerStrokes;
+  private static final String SKELETONS_KEY = "skeletons";
+  private ArrayList<ArrayList<Stroke>> skeletons;
   private Region region;
   protected JsonObject data;
 
@@ -47,23 +44,18 @@ public abstract class HangulCharacter {
     Gson gson = new Gson();
     Type collectionType = new TypeToken<Collection<Collection<Stroke>>>(){}.getType();
 
-    outerStrokes = gson.fromJson(data.getAsJsonArray(OUTER_STROKES_KEY), collectionType);
-    innerStrokes = gson.fromJson(data.getAsJsonArray(INNER_STROKES_KEY), collectionType);
+    skeletons = gson.fromJson(data.getAsJsonArray(SKELETONS_KEY), collectionType);
     region = calculateRegion();
   }
 
   private Region calculateRegion() {
-    float minX = X_RANGE_MAX;
-    float maxX = X_RANGE_MIN;
-    float minY = Y_RANGE_MAX;
-    float maxY = Y_RANGE_MIN;
+    float minX = ORIGIN_REGION.getMaxX();
+    float maxX = ORIGIN_REGION.getMinX();
+    float minY = ORIGIN_REGION.getMaxY();
+    float maxY = ORIGIN_REGION.getMinY();
 
-    ArrayList<ArrayList<Stroke>> strokes = new ArrayList<>();
-    strokes.addAll(outerStrokes);
-    strokes.addAll(innerStrokes);
-
-    for (ArrayList<Stroke> closedPaths : strokes) {
-      for (Stroke stroke : closedPaths) {
+    for (ArrayList<Stroke> skeleton : skeletons) {
+      for (Stroke stroke : skeleton) {
         minX = Math.min(minX, stroke.getMinX());
         maxX = Math.max(maxX, stroke.getMaxX());
         minY = Math.min(minY, stroke.getMinY());
@@ -73,33 +65,20 @@ public abstract class HangulCharacter {
 
     // Case for an empty list
     if (minX > maxX || minY > maxY) {
-      return new Region(HangulCharacter.X_RANGE_MIN, HangulCharacter.X_RANGE_MAX,
-                        HangulCharacter.Y_RANGE_MIN, HangulCharacter.Y_RANGE_MAX);
+      return new Region(ORIGIN_REGION.getMinX(), ORIGIN_REGION.getMaxX(),
+          ORIGIN_REGION.getMinY(), ORIGIN_REGION.getMaxY());
     }
 
-    return new Region(minX, maxX, minY, maxY);
+    return new Region(minX - X_OFFSET, maxX + X_OFFSET, minY - Y_OFFSET, maxY + Y_OFFSET);
   }
 
   /**
-   * Get array of outer strokes.
+   * Get array of skeletons.
    *
-   * <p> Do not modify data of array. This returns reference of data.
-   *
-   * @return 2D Array list of outer strokes.
+   * @return skeletons which is composed of 2D {@link kr.ac.kaist.team888.core.Stroke} array.
    */
-  public ArrayList<ArrayList<Stroke>> getOuterStorkes() {
-    return outerStrokes;
-  }
-
-  /**
-   * Get array of inner strokes.
-   *
-   * <p> Do not modify data of array. This returns reference of data.
-   *
-   * @return 2D Array list of outer strokes.
-   */
-  public ArrayList<ArrayList<Stroke>> getInnerStrokes() {
-    return innerStrokes;
+  public ArrayList<ArrayList<Stroke>> getSkeletons() {
+    return skeletons;
   }
 
   /**

@@ -9,36 +9,21 @@ import android.util.AttributeSet;
 import android.view.View;
 
 import kr.ac.kaist.team888.core.Point2D;
-import kr.ac.kaist.team888.core.Stroke;
-import kr.ac.kaist.team888.hangulcharacter.HangulCharacter;
-
-import org.apache.commons.math3.linear.LUDecomposition;
-import org.apache.commons.math3.linear.MatrixUtils;
-import org.apache.commons.math3.linear.RealMatrix;
-
-import java.util.ArrayList;
+import kr.ac.kaist.team888.core.Region;
+import kr.ac.kaist.team888.locator.Locator;
 
 public class FontCanvasView extends View {
-  private ArrayList<ArrayList<Stroke>> outerStrokes;
-  private ArrayList<ArrayList<Stroke>> innerStrokes;
-  private ArrayList<Path> outerPaths;
-  private ArrayList<Path> innerPaths;
-  private Paint outerPaint;
-  private Paint innerPaint;
-  private Paint xrayPaint;
-  private Paint pointPaint;
+  private static final float CANVAS_OFFSET_RATIO = 0.05f;
+  private static final float FIXED_POINT_RADIUS = 4f;
+  private static final float CONTROL_POINT_RADIUS = 5f;
+  private Paint skeletonPaint;
+  private Paint fixedPaint;
   private Paint controlPaint;
+  private Locator locator;
 
-  private boolean xrayView = false;
-  private float pointRadius = 4f;
+  private Region canvasRegion = new Region(0, 0, 0, 0);
 
-  private int width;
-  private int height;
-  private Point2D srcMin;
-  private Point2D srcMax;
-  private Point2D dstMin;
-  private Point2D dstMax;
-  private double[][] dataV;
+  private boolean skeletonView = false;
 
   public FontCanvasView(Context context) {
     super(context);
@@ -56,194 +41,87 @@ public class FontCanvasView extends View {
   }
 
   private void initialize() {
-    outerPaths = new ArrayList<>();
-    innerPaths = new ArrayList<>();
+    skeletonPaint = new Paint();
+    skeletonPaint.setColor(Color.BLACK);
+    skeletonPaint.setStyle(Paint.Style.STROKE);
+    skeletonPaint.setStrokeWidth(1f);
 
-    outerPaint = new Paint();
-    outerPaint.setColor(Color.BLACK);
-    outerPaint.setStyle(Paint.Style.FILL);
-
-    innerPaint = new Paint();
-    innerPaint.setColor(Color.WHITE);
-    innerPaint.setStyle(Paint.Style.FILL);
-
-    xrayPaint = new Paint();
-    xrayPaint.setColor(Color.BLACK);
-    xrayPaint.setStyle(Paint.Style.STROKE);
-    xrayPaint.setStrokeWidth(1f);
-
-    pointPaint = new Paint();
-    pointPaint.setColor(Color.BLUE);
-    pointPaint.setStyle(Paint.Style.FILL);
+    fixedPaint = new Paint();
+    fixedPaint.setColor(Color.BLUE);
+    fixedPaint.setStyle(Paint.Style.FILL);
 
     controlPaint = new Paint();
     controlPaint.setColor(Color.GREEN);
     controlPaint.setStyle(Paint.Style.FILL);
-
-    srcMin = new Point2D(HangulCharacter.X_RANGE_MIN, HangulCharacter.Y_RANGE_MIN);
-    srcMax = new Point2D(HangulCharacter.X_RANGE_MAX, HangulCharacter.Y_RANGE_MAX);
   }
 
   @Override
   protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
     super.onLayout(changed, left, top, right, bottom);
-    width = getWidth();
-    height = getHeight();
+    float width = getWidth();
+    float height = getHeight();
 
-    setDstCoordinate();
-    setDataV(srcMin, srcMax, dstMin, dstMax);
-
-    outerPaths.clear();
-    innerPaths.clear();
-    if (outerStrokes != null) {
-      for (ArrayList<Stroke> strokes : outerStrokes) {
-        strokeToPath(strokes, outerPaths);
-      }
+    if (width > height) {
+      float offset = height * CANVAS_OFFSET_RATIO;
+      canvasRegion.setMinX((width - height) / 2 + offset);
+      canvasRegion.setMaxX((width + height) / 2 - offset);
+      canvasRegion.setMinY(height - offset);
+      canvasRegion.setMaxY(0 + offset);
+    } else {
+      float offset = width * CANVAS_OFFSET_RATIO;
+      canvasRegion.setMinX(0 + offset);
+      canvasRegion.setMaxX(width - offset);
+      canvasRegion.setMinY((height + width) / 2 - offset);
+      canvasRegion.setMaxY((height + width) / 2 + offset);
     }
 
-    if (innerStrokes != null) {
-      for (ArrayList<Stroke> strokes : innerStrokes) {
-        strokeToPath(strokes, innerPaths);
-      }
-    }
+    locator.invalidate(canvasRegion);
   }
 
   @Override
   public void onDraw(Canvas canvas) {
-    Paint outerPaint;
-    Paint innerPaint;
-
-    if (xrayView) {
-      outerPaint = this.xrayPaint;
-      innerPaint = this.xrayPaint;
-    } else {
-      outerPaint = this.outerPaint;
-      innerPaint = this.innerPaint;
+    if (locator == null) {
+      return;
     }
 
-    for (Path path : outerPaths) {
-      canvas.drawPath(path, outerPaint);
-    }
-
-    for (Path path : innerPaths) {
-      canvas.drawPath(path, innerPaint);
-    }
-
-    if (outerStrokes != null && xrayView) {
-      for (ArrayList<Stroke> strokes : outerStrokes) {
-        drawPoints(strokes, canvas);
+    if (skeletonView) {
+      for (Path path : locator.getPaths()) {
+        canvas.drawPath(path, skeletonPaint);
       }
-    }
 
-    if (innerStrokes != null && xrayView) {
-      for (ArrayList<Stroke> strokes : innerStrokes) {
-        drawPoints(strokes, canvas);
+      for (Point2D fixed : locator.getFixedCircles()) {
+        canvas.drawCircle(fixed.getX(), fixed.getY(), FIXED_POINT_RADIUS, fixedPaint);
       }
-    }
-  }
 
-  private void setDstCoordinate() {
-    if (height > width) {
-      float val = width * (HangulCharacter.Y_RANGE_MAX - HangulCharacter.Y_RANGE_MIN)
-          / (HangulCharacter.X_RANGE_MAX - HangulCharacter.X_RANGE_MIN);
-
-      dstMin = new Point2D(0, (height - val) / 2 + val);
-      dstMax = new Point2D(width, (height - val) / 2);
+      for (Point2D control : locator.getControlCircles()) {
+        canvas.drawCircle(control.getX(), control.getY(), CONTROL_POINT_RADIUS, controlPaint);
+      }
     } else {
-      float val = height * (HangulCharacter.X_RANGE_MAX - HangulCharacter.X_RANGE_MIN)
-          / (HangulCharacter.Y_RANGE_MAX - HangulCharacter.Y_RANGE_MIN);
-
-      dstMin = new Point2D((width - val) / 2, height);
-      dstMax = new Point2D((width - val) / 2  + val, 0);
+      // TODO: draw contour
     }
-  }
-
-  private void setDataV(Point2D originMin, Point2D originMax,
-                        Point2D newMin, Point2D newMax) {
-    double[][] dataM = {
-        { originMin.getX(), originMin.getY(), 1, 0},
-        {-originMin.getY(), originMin.getX(), 0, 1},
-        { originMax.getX(), originMax.getY(), 1, 0},
-        {-originMax.getY(), originMax.getX(), 0, 1},
-    };
-    RealMatrix matrixM = MatrixUtils.createRealMatrix(dataM);
-    RealMatrix invMatrixM = new LUDecomposition(matrixM).getSolver().getInverse();
-
-    double[][] dataU = {
-        {newMin.getX()},
-        {newMin.getY()},
-        {newMax.getX()},
-        {newMax.getY()}
-    };
-    RealMatrix matrixU = MatrixUtils.createRealMatrix(dataU);
-
-    RealMatrix matrixV = invMatrixM.multiply(matrixU);
-    dataV = matrixV.getData();
-  }
-
-  private void strokeToPath(ArrayList<Stroke> strokes, ArrayList<Path> container) {
-    Path curPath = new Path();
-    Point2D startPoint = transform(strokes.get(0).getStartPoint());
-    curPath.moveTo(startPoint.getX(), startPoint.getY());
-
-    for (Stroke stroke : strokes) {
-      Point2D controlPoint = transform(stroke.getControlPoint());
-      Point2D endPoint = transform(stroke.getEndPoint());
-
-      curPath.quadTo(controlPoint.getX(), controlPoint.getY(), endPoint.getX(), endPoint.getY());
-    }
-
-    container.add(curPath);
-  }
-
-  private void drawPoints(ArrayList<Stroke> strokes, Canvas canvas) {
-    Point2D startPoint = transform(strokes.get(0).getStartPoint());
-    canvas.drawCircle(startPoint.getX(), startPoint.getY(), pointRadius, pointPaint);
-
-    for (Stroke stroke : strokes) {
-      Point2D controlPoint = transform(stroke.getControlPoint());
-      Point2D endPoint = transform(stroke.getEndPoint());
-
-      canvas.drawCircle(controlPoint.getX(), controlPoint.getY(), pointRadius, controlPaint);
-      canvas.drawCircle(endPoint.getX(), endPoint.getY(), pointRadius, pointPaint);
-    }
-  }
-
-  private Point2D transform(Point2D srcPoint) {
-    float dstX = (float)(dataV[0][0] * srcPoint.getX()
-        + dataV[1][0] * srcPoint.getY()
-        + dataV[2][0]);
-    float dstY = (float)(dataV[1][0] * srcPoint.getX()
-        - dataV[0][0] * srcPoint.getY()
-        + dataV[3][0]);
-
-    return new Point2D(dstX, dstY);
   }
 
   /**
-   * Draw given strokes on Canvas.
+   * Draw given locators.
    *
-   * @param outerStrokes outer strokes collection
-   * @param innerStrokes inner strokes collection
+   * @param locators locator to draw.
    */
-  public void drawStrokes(ArrayList<ArrayList<Stroke>> outerStrokes,
-                          ArrayList<ArrayList<Stroke>> innerStrokes) {
-    this.outerStrokes = outerStrokes;
-    this.innerStrokes = innerStrokes;
-
+  public void drawLocators(Locator locators) {
+    // TODO: draw multiple character
+    this.locator = locators;
     invalidate();
   }
 
   /**
-   * Set Xray View on/off.
+   * Set viewing skeleton lines on/off.
    *
-   * <p> On xray view - show basic strokes as lines and points circles.<br>
-   * Off xray view - show filled font.
+   * <p> On skeleton view - show skeleton curves of character with lines and points.
+   * <br> Off skeleton view - show filled font.
    *
-   * @param on true: xray view on, false: xray view off
+   * @param on on/off skeleton view
    */
-  public void setXrayView(boolean on) {
-    xrayView = on;
+  public void viewSkeleton(boolean on) {
+    skeletonView = on;
 
     invalidate();
   }

@@ -9,9 +9,7 @@ import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 
-import kr.ac.kaist.team888.hangulcharacter.HangulCharacter;
 import kr.ac.kaist.team888.locator.Locator;
-import kr.ac.kaist.team888.util.HangulDecomposer;
 
 public class FontMakerFragment extends Fragment {
   private FontCanvasView fontCanvasView;
@@ -29,14 +27,14 @@ public class FontMakerFragment extends Fragment {
     super.onViewCreated(view, savedInstanceState);
 
     fontCanvasView = (FontCanvasView) view.getRootView().findViewById(R.id.fontCanvas);
-    Locator locator = new Locator('맘');
-    fontCanvasView.drawStrokes(locator.getOuterStrokes(), locator.getInnerStrokes());
+    Locator locator = new Locator('갈');
+    fontCanvasView.drawLocators(locator);
 
-    Switch xrayBtn = (Switch) view.getRootView().findViewById(R.id.xrayBtn);
-    xrayBtn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+    Switch viewSkeletonBtn = (Switch) view.getRootView().findViewById(R.id.viewSkeletonBtn);
+    viewSkeletonBtn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
       @Override
       public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-        fontCanvasView.setXrayView(isChecked);
+        fontCanvasView.viewSkeleton(isChecked);
       }
     });
   }

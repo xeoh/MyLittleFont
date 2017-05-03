@@ -1,7 +1,5 @@
 package kr.ac.kaist.team888.hangulcharacter;
 
-import kr.ac.kaist.team888.util.Alert;
-
 /**
  * Hangul Enum class
  *
@@ -103,8 +101,6 @@ public enum Hangul {
    * @return Correspond {@link kr.ac.kaist.team888.hangulcharacter.Hangul} value
    */
   public static Hangul fromInt(int value) {
-    Alert.log(Hangul.class, String.format("%x", value));
-
     if (INITIAL_UNICODE_BEGIN <= value && value <= INITIAL_UNICODE_END) {
       return Hangul.values()[value - INITIAL_UNICODE_BEGIN];
     } else if (MEDIAL_UNICODE_BEGIN <= value && value <= MEDIAL_UNICODE_END) {

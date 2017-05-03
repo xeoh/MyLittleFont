@@ -116,4 +116,47 @@ public class Region {
   public void setMaxY(float maxY) {
     this.maxY = maxY;
   }
+
+  /**
+   * Do linear transformation on destination region.
+   *
+   * @param dst destination region
+   * @param stroke stroke to transform
+   * @return new stroke on destination region
+   */
+  public Stroke transformStroke(Region dst, Stroke stroke) {
+    Stroke.StrokeBuilder builder = new Stroke.StrokeBuilder()
+        .setStartPoint(transformPoint2D(dst, stroke.getStartPoint()))
+        .setEndPoint(transformPoint2D(dst, stroke.getEndPoint()));
+
+    for (Point2D controlPoint : stroke.getControlPoints()) {
+      builder.addControlPoint(transformPoint2D(dst, controlPoint));
+    }
+
+    return builder.build();
+  }
+
+  /**
+   * De linear transformation on destination region.
+   *
+   * @param dst destination region
+   * @param point point to transform
+   * @return new point on destination region
+   */
+  public Point2D transformPoint2D(Region dst, Point2D point) {
+    Point2D baseMinPoint = getMinPoint();
+    Point2D baseDiffPoint = getMaxPoint().sub(baseMinPoint);
+    Point2D targetMinPoint = dst.getMinPoint();
+    Point2D targetDiffPoint = dst.getMaxPoint().sub(targetMinPoint);
+
+    return point.sub(baseMinPoint)
+        .scaleX(targetDiffPoint.getX() / baseDiffPoint.getX())
+        .scaleY(targetDiffPoint.getY() / baseDiffPoint.getY())
+        .add(targetMinPoint);
+  }
+
+  @Override
+  public String toString() {
+    return String.format("X: [%f, %f] Y:[%f, %f]", minX, maxX, minY, maxY);
+  }
 }

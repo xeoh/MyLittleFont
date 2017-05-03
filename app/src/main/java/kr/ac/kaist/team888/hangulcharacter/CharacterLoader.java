@@ -11,8 +11,12 @@ import com.google.common.collect.ImmutableMap;
 public class CharacterLoader {
   private ImmutableMap<Hangul, HangulCharacter> hangulMap
       = new ImmutableMap.Builder<Hangul, HangulCharacter>()
+      .put(Hangul.INIT_GIYEOK, new Giyeok())
+      .put(Hangul.INIT_RIEUL, new Rieul())
       .put(Hangul.INIT_MIEUM, new Mieum())
       .put(Hangul.MEDI_AH, new Ah())
+      .put(Hangul.FIN_GIYEOK, new Giyeok())
+      .put(Hangul.FIN_RIEUL, new Rieul())
       .put(Hangul.FIN_MIEUM, new Mieum())
       .build();
 
