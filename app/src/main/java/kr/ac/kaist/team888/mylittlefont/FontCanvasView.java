@@ -11,11 +11,13 @@ import android.view.View;
 import kr.ac.kaist.team888.core.Point2D;
 import kr.ac.kaist.team888.core.Region;
 import kr.ac.kaist.team888.locator.Locator;
+import kr.ac.kaist.team888.util.FeatureController;
 
-public class FontCanvasView extends View {
+public class FontCanvasView extends View implements FeatureController.OnFeatureChangeListener {
   private static final float CANVAS_OFFSET_RATIO = 0.05f;
   private static final float FIXED_POINT_RADIUS = 4f;
   private static final float CONTROL_POINT_RADIUS = 5f;
+  private static final int PRIORITY = 2;
   private Paint skeletonPaint;
   private Paint fixedPaint;
   private Paint controlPaint;
@@ -53,6 +55,8 @@ public class FontCanvasView extends View {
     controlPaint = new Paint();
     controlPaint.setColor(Color.GREEN);
     controlPaint.setStyle(Paint.Style.FILL);
+
+    FeatureController.getInstance().registerOnFeatureChangeListener(this);
   }
 
   @Override
@@ -124,5 +128,15 @@ public class FontCanvasView extends View {
     skeletonView = on;
 
     invalidate();
+  }
+
+  @Override
+  public void onFeatureChange() {
+    invalidate();
+  }
+
+  @Override
+  public int getPriority() {
+    return PRIORITY;
   }
 }

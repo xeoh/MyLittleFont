@@ -7,6 +7,7 @@ import com.google.gson.reflect.TypeToken;
 import kr.ac.kaist.team888.core.Region;
 import kr.ac.kaist.team888.core.Stroke;
 import kr.ac.kaist.team888.util.Alert;
+import kr.ac.kaist.team888.util.FeatureController;
 import kr.ac.kaist.team888.util.JsonLoader;
 
 import java.lang.reflect.Type;
@@ -16,11 +17,12 @@ import java.util.Collection;
 /**
  * Abstract Class for each individual Hangul characters.
  */
-public abstract class HangulCharacter {
+public abstract class HangulCharacter implements FeatureController.OnFeatureChangeListener {
   private static final String NO_DATA_ERROR = "No Json Data for character \'%s\'";
   public static final Region ORIGIN_REGION = new Region(0, 940, -200, 800);
   private static final float X_OFFSET = 35f;
   private static final float Y_OFFSET = 30f;
+  private static final int PRIORITY = 0;
 
   private static final String SKELETONS_KEY = "skeletons";
   private ArrayList<ArrayList<Stroke>> skeletons;
@@ -46,6 +48,9 @@ public abstract class HangulCharacter {
 
     skeletons = gson.fromJson(data.getAsJsonArray(SKELETONS_KEY), collectionType);
     region = calculateRegion();
+
+    FeatureController.getInstance().registerOnFeatureChangeListener(this);
+
   }
 
   private Region calculateRegion() {
@@ -88,5 +93,13 @@ public abstract class HangulCharacter {
    */
   public Region getRegion() {
     return region;
+  }
+
+  @Override
+  public void onFeatureChange() { }
+
+  @Override
+  public int getPriority() {
+    return PRIORITY;
   }
 }

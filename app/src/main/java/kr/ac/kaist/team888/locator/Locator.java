@@ -10,6 +10,7 @@ import kr.ac.kaist.team888.core.Point2D;
 import kr.ac.kaist.team888.core.Region;
 import kr.ac.kaist.team888.core.Stroke;
 import kr.ac.kaist.team888.hangulcharacter.HangulCharacter;
+import kr.ac.kaist.team888.util.FeatureController;
 import kr.ac.kaist.team888.util.HangulDecomposer;
 import kr.ac.kaist.team888.util.JsonLoader;
 
@@ -22,9 +23,11 @@ import java.util.Collection;
  *
  * <p>This class object provides a functionality to get outer and inner strokes of the letter.
  */
-public class Locator {
+public class Locator implements FeatureController.OnFeatureChangeListener{
   private static final String TYPE_TOKEN = "type%d";
   public static final Region ORIGIN_REGION = HangulCharacter.ORIGIN_REGION;
+
+  private static final int PRIORITY = 1;
 
   private ArrayList<Region> regions;
   private ArrayList<HangulCharacter> characters;
@@ -47,6 +50,10 @@ public class Locator {
   public Locator(char letter) {
     characters = HangulDecomposer.decompose(letter);
     regions = calculateRegions();
+
+
+    FeatureController.getInstance().registerOnFeatureChangeListener(this);
+  }
     skeletons = new ArrayList<>();
 
     for (int i = 0; i < characters.size(); i++) {
@@ -177,5 +184,15 @@ public class Locator {
       }
       paths.add(path);
     }
+  }
+
+  @Override
+  public void onFeatureChange() {
+    applyCurve();
+  }
+
+  @Override
+  public int getPriority() {
+    return PRIORITY;
   }
 }
