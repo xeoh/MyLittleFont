@@ -19,7 +19,7 @@ import java.io.IOException;
  */
 public class JsonLoader {
   // full path: /storage/emulated/0/Download/MyLittleFont/DefaultData.json
-  private static final String DEFAULT_FILE_PATH = "/MyLittleFont/DefaultData.json";
+  private static final String DEFAULT_FILE_PATH = "/MyLittleFont/DefaultSkeleton.json";
   private static final String CHARACTERS_KEY = "characters";
   private static final String LOCATOR_KEY = "locator";
 

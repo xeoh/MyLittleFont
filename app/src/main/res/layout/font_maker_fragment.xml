@@ -32,11 +32,10 @@
         android:background="#f0f0f0"/>
 
     <Switch
-        android:id="@+id/xrayBtn"
-        app:layout_widthPercent="8%"
-
+        android:id="@+id/viewSkeletonBtn"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_marginLeftPercent="90%"
-        android:text="XRAY" />
+        app:layout_marginLeftPercent="85%"
+        android:text="Skeleton View" />
 
 </android.support.percent.PercentFrameLayout>

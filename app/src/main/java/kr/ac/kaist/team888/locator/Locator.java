@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.reflect.TypeToken;
 
+import android.graphics.Path;
+
 import kr.ac.kaist.team888.core.Point2D;
 import kr.ac.kaist.team888.core.Region;
 import kr.ac.kaist.team888.core.Stroke;
@@ -22,11 +24,15 @@ import java.util.Collection;
  */
 public class Locator {
   private static final String TYPE_TOKEN = "type%d";
+  public static final Region ORIGIN_REGION = HangulCharacter.ORIGIN_REGION;
 
   private ArrayList<Region> regions;
   private ArrayList<HangulCharacter> characters;
-  private ArrayList<ArrayList<Stroke>> outerStrokes;
-  private ArrayList<ArrayList<Stroke>> innerStrokes;
+  private ArrayList<ArrayList<Stroke>> skeletons;
+
+  private ArrayList<Path> paths;
+  private ArrayList<Point2D> fixedCircles;
+  private ArrayList<Point2D> controlCircles;
 
   /**
    * Constructs a locator object for given Hangul letter.
@@ -41,19 +47,20 @@ public class Locator {
   public Locator(char letter) {
     characters = HangulDecomposer.decompose(letter);
     regions = calculateRegions();
-    outerStrokes = new ArrayList<>();
-    innerStrokes = new ArrayList<>();
+    skeletons = new ArrayList<>();
 
     for (int i = 0; i < characters.size(); i++) {
       HangulCharacter character = characters.get(i);
       Region baseRegion = character.getRegion();
       Region targetRegion = regions.get(i);
 
-      for (ArrayList<Stroke> closedPath : character.getOuterStorkes()) {
-        outerStrokes.add(transformClosedPath(closedPath, baseRegion, targetRegion));
-      }
-      for (ArrayList<Stroke> closedPath : character.getInnerStrokes()) {
-        innerStrokes.add(transformClosedPath(closedPath, baseRegion, targetRegion));
+      for (ArrayList<Stroke> skeleton : character.getSkeletons()) {
+
+        ArrayList<Stroke> newSkeleton = new ArrayList<>();
+        for (Stroke stroke : skeleton) {
+          newSkeleton.add(baseRegion.transformStroke(targetRegion, stroke));
+        }
+        skeletons.add(newSkeleton);
       }
     }
   }
@@ -69,29 +76,6 @@ public class Locator {
     return regions;
   }
 
-  private ArrayList<Stroke> transformClosedPath(ArrayList<Stroke> closedPath,
-                                                Region baseRegion, Region targetRegion) {
-    for (Stroke stroke : closedPath) {
-      stroke.setStartPoint(transformPoint(stroke.getStartPoint(), baseRegion, targetRegion));
-      stroke.setControlPoint(transformPoint(stroke.getControlPoint(), baseRegion, targetRegion));
-      stroke.setEndPoint(transformPoint(stroke.getEndPoint(), baseRegion, targetRegion));
-    }
-
-    return closedPath;
-  }
-
-  private Point2D transformPoint(Point2D point, Region baseRegion, Region targetRegion) {
-    Point2D baseMinPoint = baseRegion.getMinPoint();
-    Point2D baseDiffPoint = baseRegion.getMaxPoint().sub(baseMinPoint);
-    Point2D targetMinPoint = targetRegion.getMinPoint();
-    Point2D targetDiffPoint = targetRegion.getMaxPoint().sub(targetMinPoint);
-
-    return point.sub(baseMinPoint)
-        .scaleX(targetDiffPoint.getX() / baseDiffPoint.getX())
-        .scaleY(targetDiffPoint.getY() / baseDiffPoint.getY())
-        .add(targetMinPoint);
-  }
-
   /**
    * Returns an array list of characters of the letter located by the locator.
    *
@@ -102,20 +86,96 @@ public class Locator {
   }
 
   /**
-   * Returns an array list of outer strokes of the letter located by the locator.
+   * Returns an array list of skeleton of the letter located by the locator.
    *
-   * @return an array list of outer strokes.
+   * @return an array list of skeleton.
    */
-  public ArrayList<ArrayList<Stroke>> getOuterStrokes() {
-    return outerStrokes;
+  public ArrayList<ArrayList<Stroke>> getSkeletons() {
+    return skeletons;
   }
 
   /**
-   * Returns an array list of inner strokes of the letter located by the locator.
+   * Recalculate Paths and Circles respect to canvas region.
    *
-   * @return an array list of inner strokes.
+   * <p>paths (from {@link Locator#getPaths()}),
+   * fixedCircles (from {@link Locator#getFixedCircles()}),
+   * controlCircles (from {@link Locator#getControlCircles()})
+   * are updated from this function call.
+   *
+   * @param canvasRegion Region of canvas
    */
-  public ArrayList<ArrayList<Stroke>> getInnerStrokes() {
-    return innerStrokes;
+  public void invalidate(Region canvasRegion) {
+    paths = new ArrayList<>();
+    fixedCircles = new ArrayList<>();
+    controlCircles = new ArrayList<>();
+
+    setXrayPaths(canvasRegion);
+  }
+
+  /**
+   * Get array list of paths to draw on canvas.
+   *
+   * @return array list of paths
+   */
+  public ArrayList<Path> getPaths() {
+    return paths;
+  }
+
+  /**
+   * Get array list of fixed points to draw on canvas.
+   *
+   * @return array list of fixed point
+   */
+  public ArrayList<Point2D> getFixedCircles() {
+    return fixedCircles;
+  }
+
+  /**
+   * Get array list of control points to draw on canvas.
+   *
+   * @return array list of control point
+   */
+  public ArrayList<Point2D> getControlCircles() {
+    return controlCircles;
+  }
+
+  private void setXrayPaths(Region canvasRegion) {
+    for (ArrayList<Stroke> skeleton : skeletons) {
+      Path path = new Path();
+
+      for (Stroke stroke : skeleton) {
+        Stroke transStroke = ORIGIN_REGION.transformStroke(canvasRegion, stroke);
+        path.moveTo(transStroke.getStartPoint().getX(), transStroke.getStartPoint().getY());
+        fixedCircles.add(transStroke.getStartPoint());
+
+        ArrayList<Point2D> controlPoints = transStroke.getControlPoints();
+        for (int i = 0; i < controlPoints.size(); i++) {
+          if (i == controlPoints.size() - 1) {
+            break;
+          }
+
+          float controlX = controlPoints.get(i).getX();
+          float controlY = controlPoints.get(i).getY();
+
+          float endX = (controlPoints.get(i + 1).getX() + controlX) / 2;
+          float endY = (controlPoints.get(i + 1).getY() + controlY) / 2;
+
+          path.quadTo(controlX, controlY, endX, endY);
+          controlCircles.add(controlPoints.get(i));
+        }
+
+        if (controlPoints.isEmpty()) {
+          path.lineTo(transStroke.getEndPoint().getX(), transStroke.getEndPoint().getY());
+          fixedCircles.add(transStroke.getEndPoint());
+        } else {
+          Point2D lastControlPoint = controlPoints.get(controlPoints.size() - 1);
+          path.quadTo(lastControlPoint.getX(), lastControlPoint.getY(),
+              transStroke.getEndPoint().getX(), transStroke.getEndPoint().getY());
+          controlCircles.add(lastControlPoint);
+          fixedCircles.add(transStroke.getEndPoint());
+        }
+      }
+      paths.add(path);
+    }
   }
 }
