@@ -7,9 +7,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
+import android.widget.SeekBar;
 import android.widget.Switch;
 
 import kr.ac.kaist.team888.locator.Locator;
+import kr.ac.kaist.team888.util.FeatureController;
 
 public class FontMakerFragment extends Fragment {
   private FontCanvasView fontCanvasView;
@@ -36,6 +38,21 @@ public class FontMakerFragment extends Fragment {
       public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
         fontCanvasView.viewSkeleton(isChecked);
       }
+    });
+
+    SeekBar curveControl = (SeekBar) view.getRootView().findViewById(R.id.curveControl);
+    curveControl.setProgress(0);
+    curveControl.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+      @Override
+      public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+        FeatureController.getInstance().setCurve(progress / 100f);
+      }
+
+      @Override
+      public void onStartTrackingTouch(SeekBar seekBar) { }
+
+      @Override
+      public void onStopTrackingTouch(SeekBar seekBar) { }
     });
   }
 }

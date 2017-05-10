@@ -19,6 +19,8 @@ public class FeatureController {
     }
   };
 
+  private float curve = 0.0f;
+
   /**
    * Interface for listening change of hangul features.
    *
@@ -78,5 +80,24 @@ public class FeatureController {
         i--;
       }
     }
+  }
+
+  /**
+   * Getter curve value.
+   *
+   * @return curve value
+   */
+  public float getCurve() {
+    return curve;
+  }
+
+  /**
+   * Setter of curve value.
+   *
+   * @param curve curve value
+   */
+  public void setCurve(float curve) {
+    this.curve = curve;
+    onFeatureChange();
   }
 }

@@ -1,5 +1,7 @@
 package kr.ac.kaist.team888.core;
 
+import java.util.ArrayList;
+
 /**
  * This class represents the region on the plane.
  *
@@ -125,15 +127,15 @@ public class Region {
    * @return new stroke on destination region
    */
   public Stroke transformStroke(Region dst, Stroke stroke) {
-    Stroke.StrokeBuilder builder = new Stroke.StrokeBuilder()
-        .setStartPoint(transformPoint2D(dst, stroke.getStartPoint()))
-        .setEndPoint(transformPoint2D(dst, stroke.getEndPoint()));
-
+    Stroke transformed = stroke.copy();
+    transformed.setStartPoint(transformPoint2D(dst, stroke.getStartPoint()));
+    transformed.setEndPoint(transformPoint2D(dst, stroke.getEndPoint()));
+    transformed.setControlPoints(new ArrayList<Point2D>());
     for (Point2D controlPoint : stroke.getControlPoints()) {
-      builder.addControlPoint(transformPoint2D(dst, controlPoint));
+      transformed.addControlPoint(transformPoint2D(dst, controlPoint));
     }
 
-    return builder.build();
+    return transformed;
   }
 
   /**

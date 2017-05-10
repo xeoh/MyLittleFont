@@ -13,6 +13,7 @@ public class Stroke {
   private Point2D startPoint;
   private Point2D endPoint;
   private ArrayList<Point2D> controlPoints;
+  private boolean isJoint = false;
 
   private Stroke(Point2D startPoint, Point2D endPoint, ArrayList<Point2D> controlPoints) {
     this.startPoint = startPoint;
@@ -154,6 +155,47 @@ public class Stroke {
     this.controlPoints = controlPoints;
   }
 
+  /**
+   * Add control point.
+   *
+   * @param controlPoint point to add
+   */
+  public void addControlPoint(Point2D controlPoint) {
+    controlPoints.add(controlPoint);
+  }
+
+  /**
+   * Setter of isJoint.
+   *
+   * @param isJoint true: this stroke is joint type, false: this stroke is not joint type
+   */
+  public void setJoint(boolean isJoint) {
+    this.isJoint = isJoint;
+  }
+
+  /**
+   * Getter of isJoint.
+   *
+   * @return true: when stroke is joint type, false: when stroke is not joint type
+   */
+  public boolean isJoint() {
+    return isJoint;
+  }
+
+  /**
+   * Copy stroke but with different inner objects.
+   *
+   * @return copy of current stroke
+   */
+  public Stroke copy() {
+    Stroke copy = new Stroke(startPoint.copy(), endPoint.copy(), new ArrayList<Point2D>());
+    for (Point2D controlPoint : controlPoints) {
+      copy.addControlPoint(controlPoint.copy());
+    }
+    copy.setJoint(isJoint);
+    return copy;
+  }
+
   @Override
   public String toString() {
     String rtn = "[" + startPoint;
@@ -171,6 +213,7 @@ public class Stroke {
     private Point2D startPoint;
     private Point2D endPoint;
     private ArrayList<Point2D> controlPoints = new ArrayList<>();
+    private boolean isJoint = false;
 
     public StrokeBuilder setStartPoint(Point2D startPoint) {
       this.startPoint = startPoint;
@@ -187,8 +230,20 @@ public class Stroke {
       return this;
     }
 
+    public StrokeBuilder setJoint(boolean isJoint) {
+      this.isJoint = isJoint;
+      return this;
+    }
+
+    /**
+     * Build stroke.
+     *
+     * @return new Stroke
+     */
     public Stroke build() {
-      return new Stroke(startPoint, endPoint, controlPoints);
+      Stroke stroke = new Stroke(startPoint, endPoint, controlPoints);
+      stroke.setJoint(isJoint);
+      return stroke;
     }
   }
 }
