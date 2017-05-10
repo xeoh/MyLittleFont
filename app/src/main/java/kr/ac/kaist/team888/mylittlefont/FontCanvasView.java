@@ -16,7 +16,7 @@ import kr.ac.kaist.team888.util.FeatureController;
 public class FontCanvasView extends View implements FeatureController.OnFeatureChangeListener {
   private static final float CANVAS_OFFSET_RATIO = 0.05f;
   private static final float FIXED_POINT_RADIUS = 4f;
-  private static final float CONTROL_POINT_RADIUS = 5f;
+  private static final float CONTROL_POINT_RADIUS = 4f;
   private static final int PRIORITY = 2;
   private Paint skeletonPaint;
   private Paint fixedPaint;
@@ -44,17 +44,20 @@ public class FontCanvasView extends View implements FeatureController.OnFeatureC
 
   private void initialize() {
     skeletonPaint = new Paint();
-    skeletonPaint.setColor(Color.BLACK);
+    skeletonPaint.setColor(Color.RED);
     skeletonPaint.setStyle(Paint.Style.STROKE);
-    skeletonPaint.setStrokeWidth(1f);
+    skeletonPaint.setStrokeWidth(3f);
+    skeletonPaint.setFlags(Paint.ANTI_ALIAS_FLAG);
 
     fixedPaint = new Paint();
     fixedPaint.setColor(Color.BLUE);
     fixedPaint.setStyle(Paint.Style.FILL);
+    fixedPaint.setFlags(Paint.ANTI_ALIAS_FLAG);
 
     controlPaint = new Paint();
     controlPaint.setColor(Color.GREEN);
     controlPaint.setStyle(Paint.Style.FILL);
+    controlPaint.setFlags(Paint.ANTI_ALIAS_FLAG);
 
     FeatureController.getInstance().registerOnFeatureChangeListener(this);
   }
@@ -76,7 +79,7 @@ public class FontCanvasView extends View implements FeatureController.OnFeatureC
       canvasRegion.setMinX(0 + offset);
       canvasRegion.setMaxX(width - offset);
       canvasRegion.setMinY((height + width) / 2 - offset);
-      canvasRegion.setMaxY((height + width) / 2 + offset);
+      canvasRegion.setMaxY((height - width) / 2 + offset);
     }
 
     locator.invalidate(canvasRegion);
@@ -93,13 +96,14 @@ public class FontCanvasView extends View implements FeatureController.OnFeatureC
         canvas.drawPath(path, skeletonPaint);
       }
 
+      for (Point2D control : locator.getControlCircles()) {
+        canvas.drawCircle(control.getX(), control.getY(), CONTROL_POINT_RADIUS, controlPaint);
+      }
+
       for (Point2D fixed : locator.getFixedCircles()) {
         canvas.drawCircle(fixed.getX(), fixed.getY(), FIXED_POINT_RADIUS, fixedPaint);
       }
 
-      for (Point2D control : locator.getControlCircles()) {
-        canvas.drawCircle(control.getX(), control.getY(), CONTROL_POINT_RADIUS, controlPaint);
-      }
     } else {
       // TODO: draw contour
     }
