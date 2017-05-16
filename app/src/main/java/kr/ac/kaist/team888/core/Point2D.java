@@ -108,6 +108,45 @@ public class Point2D {
     return new Point2D(this.valX, this.valY * factor);
   }
 
+  /**
+   * Get length of vector.
+   *
+   * @return length
+   */
+  public float length() {
+    return (float)Math.sqrt(valX * valX + valY * valY);
+  }
+
+  /**
+   * Normalize point2D.
+   *
+   * @return normalized Point2D
+   */
+  public Point2D norm() {
+    return new Point2D(valX / length(), valY / length());
+  }
+
+  /**
+   * Copy Point2D.
+   *
+   * @return copy of current point
+   */
+  public Point2D copy() {
+    return new Point2D(valX, valY);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == null) {
+      return false;
+    }
+    if (!Point2D.class.isAssignableFrom(obj.getClass())) {
+      return false;
+    }
+    final Point2D other = (Point2D) obj;
+    return this.valX == other.valX && this.valY == other.valY;
+  }
+
   @Override
   public String toString() {
     return "(" + valX + ", " + valY + ")";

@@ -27,10 +27,12 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
   private static final String TYPE_TOKEN = "type%d";
   public static final Region ORIGIN_REGION = HangulCharacter.ORIGIN_REGION;
 
+  private static final int CURVE_MAX = 60;
   private static final int PRIORITY = 1;
 
   private ArrayList<Region> regions;
   private ArrayList<HangulCharacter> characters;
+  private ArrayList<ArrayList<Stroke>> skeletonsData;
   private ArrayList<ArrayList<Stroke>> skeletons;
 
   private ArrayList<Path> paths;
@@ -51,9 +53,13 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
     characters = HangulDecomposer.decompose(letter);
     regions = calculateRegions();
 
+    initialize();
 
     FeatureController.getInstance().registerOnFeatureChangeListener(this);
   }
+
+  private void initialize() {
+    skeletonsData = new ArrayList<>();
     skeletons = new ArrayList<>();
 
     for (int i = 0; i < characters.size(); i++) {
@@ -63,13 +69,19 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
 
       for (ArrayList<Stroke> skeleton : character.getSkeletons()) {
 
+        ArrayList<Stroke> newSkeletonData = new ArrayList<>();
         ArrayList<Stroke> newSkeleton = new ArrayList<>();
         for (Stroke stroke : skeleton) {
-          newSkeleton.add(baseRegion.transformStroke(targetRegion, stroke));
+          Stroke transformedStroke = baseRegion.transformStroke(targetRegion, stroke);
+          newSkeletonData.add(transformedStroke);
+          newSkeleton.add(transformedStroke.copy());
         }
+        skeletonsData.add(newSkeletonData);
         skeletons.add(newSkeleton);
       }
     }
+
+    applyCurve();
   }
 
   private ArrayList<Region> calculateRegions() {
@@ -144,6 +156,40 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
    */
   public ArrayList<Point2D> getControlCircles() {
     return controlCircles;
+  }
+
+  private void applyCurve() {
+    for (int i = 0 ; i < skeletons.size(); i++) {
+      ArrayList<Stroke> skeletonData = skeletonsData.get(i);
+      ArrayList<Stroke> skeleton = skeletons.get(i);
+      for (int j = 0; j < skeletons.get(i).size(); j++) {
+        Stroke joint = skeletons.get(i).get(j);
+        if (joint.isJoint()) {
+          Stroke leftStroke = j != 0
+              ? skeleton.get(j - 1) : skeleton.get(skeleton.size() - 1);
+          Stroke leftStrokeData = j != 0
+              ? skeletonData.get(j - 1) : skeletonData.get(skeletonData.size() - 1);
+          Stroke rightStroke = j != skeleton.size() - 1
+              ? skeleton.get(j + 1) : skeleton.get(0);
+          Stroke rightStrokeData = j != skeletonData.size() - 1
+              ? skeletonData.get(j + 1) : skeletonData.get(0);
+
+          Point2D leftVector = leftStrokeData.getStartPoint().sub(leftStrokeData.getEndPoint());
+          Point2D rightVector = rightStrokeData.getEndPoint().sub(rightStrokeData.getStartPoint());
+
+          float scale = FeatureController.getInstance().getCurve() * CURVE_MAX;
+          leftStroke.setEndPoint(leftStrokeData
+              .getEndPoint().add(leftVector.scale(scale / leftVector.length())));
+          joint.setStartPoint(leftStrokeData
+              .getEndPoint().add(leftVector.scale(scale / leftVector.length())));
+
+          rightStroke.setStartPoint(rightStrokeData
+              .getStartPoint().add(rightVector.scale(scale / rightVector.length())));
+          joint.setEndPoint(rightStrokeData
+              .getStartPoint().add(rightVector.scale(scale / rightVector.length())));
+        }
+      }
+    }
   }
 
   private void setXrayPaths(Region canvasRegion) {

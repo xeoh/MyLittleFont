@@ -13,6 +13,7 @@ import kr.ac.kaist.team888.util.JsonLoader;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 
 /**
  * Abstract Class for each individual Hangul characters.
@@ -25,6 +26,7 @@ public abstract class HangulCharacter implements FeatureController.OnFeatureChan
   private static final int PRIORITY = 0;
 
   private static final String SKELETONS_KEY = "skeletons";
+  private ArrayList<ArrayList<Stroke>> skeletonsData;
   private ArrayList<ArrayList<Stroke>> skeletons;
   private Region region;
   protected JsonObject data;
@@ -46,11 +48,40 @@ public abstract class HangulCharacter implements FeatureController.OnFeatureChan
     Gson gson = new Gson();
     Type collectionType = new TypeToken<Collection<Collection<Stroke>>>(){}.getType();
 
-    skeletons = gson.fromJson(data.getAsJsonArray(SKELETONS_KEY), collectionType);
+    skeletonsData = gson.fromJson(data.getAsJsonArray(SKELETONS_KEY), collectionType);
+    addJointStroke();
+    skeletons = new ArrayList<>();
+    for (int i = 0; i < skeletonsData.size(); i++) {
+      skeletons.add(i, new ArrayList<Stroke>());
+      for (int j = 0; j < skeletonsData.get(i).size(); j++) {
+        skeletons.get(i).add(skeletonsData.get(i).get(j).copy());
+      }
+    }
     region = calculateRegion();
 
     FeatureController.getInstance().registerOnFeatureChangeListener(this);
+  }
 
+  private void addJointStroke() {
+    for (ArrayList<Stroke> skeleton : skeletonsData) {
+      HashMap<Stroke, Stroke> joints = new HashMap<>();
+      for (int i = 0; i < skeleton.size(); i++) {
+        Stroke nextStroke = (i == skeleton.size() - 1) ? skeleton.get(0) : skeleton.get(i + 1);
+
+        if (skeleton.get(i).getEndPoint().equals(nextStroke.getStartPoint())) {
+          joints.put(skeleton.get(i), new Stroke.StrokeBuilder()
+              .setStartPoint(skeleton.get(i).getEndPoint())
+              .setEndPoint(skeleton.get(i).getEndPoint())
+              .addControlPoint(skeleton.get(i).getEndPoint())
+              .setJoint(true)
+              .build());
+        }
+      }
+
+      for (Stroke pos : joints.keySet()) {
+        skeleton.add(skeleton.indexOf(pos) + 1, joints.get(pos));
+      }
+    }
   }
 
   private Region calculateRegion() {
@@ -59,7 +90,7 @@ public abstract class HangulCharacter implements FeatureController.OnFeatureChan
     float minY = ORIGIN_REGION.getMaxY();
     float maxY = ORIGIN_REGION.getMinY();
 
-    for (ArrayList<Stroke> skeleton : skeletons) {
+    for (ArrayList<Stroke> skeleton : skeletonsData) {
       for (Stroke stroke : skeleton) {
         minX = Math.min(minX, stroke.getMinX());
         maxX = Math.max(maxX, stroke.getMaxX());
