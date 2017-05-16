@@ -78,8 +78,6 @@ public class FontCanvasView extends View implements FeatureController.OnFeatureC
       canvasRegion.setMinY((height + width) / 2 - offset);
       canvasRegion.setMaxY((height + width) / 2 + offset);
     }
-
-    locator.invalidate(canvasRegion);
   }
 
   @Override
@@ -87,6 +85,8 @@ public class FontCanvasView extends View implements FeatureController.OnFeatureC
     if (locator == null) {
       return;
     }
+
+    locator.invalidate(canvasRegion);
 
     if (skeletonView) {
       for (Path path : locator.getPaths()) {
