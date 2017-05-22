@@ -18,6 +18,8 @@ public class FontCanvasView extends View implements FeatureController.OnFeatureC
   private static final float FIXED_POINT_RADIUS = 4f;
   private static final float CONTROL_POINT_RADIUS = 5f;
   private static final int PRIORITY = 2;
+  private Paint contourPaint;
+  private Paint contourLayoutPaint;
   private Paint skeletonPaint;
   private Paint fixedPaint;
   private Paint controlPaint;
@@ -43,6 +45,16 @@ public class FontCanvasView extends View implements FeatureController.OnFeatureC
   }
 
   private void initialize() {
+    contourPaint = new Paint();
+    contourPaint.setColor(Color.BLACK);
+    contourPaint.setStyle(Paint.Style.FILL);
+    contourPaint.setStrokeWidth(1f);
+
+    contourLayoutPaint = new Paint();
+    contourLayoutPaint.setColor(Color.LTGRAY);
+    contourLayoutPaint.setStyle(Paint.Style.STROKE);
+    contourLayoutPaint.setStrokeWidth(1f);
+
     skeletonPaint = new Paint();
     skeletonPaint.setColor(Color.BLACK);
     skeletonPaint.setStyle(Paint.Style.STROKE);
@@ -89,7 +101,11 @@ public class FontCanvasView extends View implements FeatureController.OnFeatureC
     locator.invalidate(canvasRegion);
 
     if (skeletonView) {
-      for (Path path : locator.getPaths()) {
+      for (Path path : locator.getContourPaths()) {
+        canvas.drawPath(path, contourLayoutPaint);
+      }
+
+      for (Path path : locator.getSkeletonPaths()) {
         canvas.drawPath(path, skeletonPaint);
       }
 
@@ -101,7 +117,9 @@ public class FontCanvasView extends View implements FeatureController.OnFeatureC
         canvas.drawCircle(control.getX(), control.getY(), CONTROL_POINT_RADIUS, controlPaint);
       }
     } else {
-      // TODO: draw contour
+      for (Path path : locator.getContourPaths()) {
+        canvas.drawPath(path, contourPaint);
+      }
     }
   }
 
