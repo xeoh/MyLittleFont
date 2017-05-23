@@ -22,6 +22,8 @@ public class BezierCurve extends ParametricPolynomialCurve {
   private int order;
   private BezierCurveOffsetMethodType offsetMethod;
 
+  private boolean isJoint = false;
+
   /**
    * Creates a new Bezier curve with given controlling points and sets a default offset method.
    *
@@ -187,8 +189,76 @@ public class BezierCurve extends ParametricPolynomialCurve {
     return new Vector2D(1, points[index]);
   }
 
+  /**
+   * Sets a point at given position with given point.
+   *
+   * @param index position
+   * @param point a new point
+   * @throws OutOfRangeException if position is invalid
+   */
+  public void setPoint(int index, Vector2D point) throws OutOfRangeException {
+    if (index < 0 || index > order) {
+      throw new OutOfRangeException(index, 0, order);
+    }
+    MathUtils.checkNotNull(point);
+    points[index] = new Vector2D(1, point);
+
+    double[][] coefficients = calculateCoefficients(points);
+
+    this.polynomials = new PolynomialFunction[2];
+    this.polynomials[0] = new PolynomialFunction(coefficients[0]);
+    this.polynomials[1] = new PolynomialFunction(coefficients[1]);
+  }
+
+  /**
+   * Gets the start point.
+   *
+   * @return the start point
+   */
   public Vector2D getStartPoint() {
     return new Vector2D(1, points[0]);
+  }
+
+  /**
+   * Sets the start point.
+   *
+   * @param point a new start point
+   */
+  public void setStartPoint(Vector2D point) {
+    setPoint(0, new Vector2D(1, point));
+  }
+
+  /**
+   * Gets the end point.
+   *
+   * @return the end point
+   */
+  public Vector2D getEndPoint() {
+    return new Vector2D(1, points[order]);
+  }
+
+  /**
+   * Sets the end point.
+   *
+   * @param point a new end point
+   */
+  public void setEndPoint(Vector2D point) {
+    setPoint(order, new Vector2D(1, point));
+  }
+
+  /**
+   * Gets the array of control points.
+   *
+   * <p>This excepts start and end point.
+   *
+   * @return the array of control points
+   */
+  public Vector2D[] getControlPoints() {
+    Vector2D[] controlPoints = new Vector2D[order - 1];
+    for (int i = 0; i < controlPoints.length; i++) {
+      controlPoints[i] = points[i + 1];
+    }
+    return controlPoints;
   }
 
   /**
@@ -198,6 +268,24 @@ public class BezierCurve extends ParametricPolynomialCurve {
    */
   public int getOrder() {
     return order;
+  }
+
+  /**
+   * Returns true if it is a joint, false otherwise.
+   *
+   * @return whether is joint or not
+   */
+  public boolean isJoint() {
+    return isJoint;
+  }
+
+  /**
+   * Sets a joint.
+   *
+   * @param joint true if joint, false if not
+   */
+  public void setJoint(boolean joint) {
+    isJoint = joint;
   }
 
   /**
@@ -250,7 +338,9 @@ public class BezierCurve extends ParametricPolynomialCurve {
 
   @Override
   public BezierCurve clone() {
-    return new BezierCurve(points, offsetMethod);
+    BezierCurve curve = new BezierCurve(points, offsetMethod);
+    curve.setJoint(isJoint);
+    return curve;
   }
 
   @Override

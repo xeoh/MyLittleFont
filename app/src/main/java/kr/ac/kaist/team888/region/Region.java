@@ -1,8 +1,8 @@
-package kr.ac.kaist.team888.core;
+package kr.ac.kaist.team888.region;
+
+import kr.ac.kaist.team888.bezier.BezierCurve;
 
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
-
-import java.util.ArrayList;
 
 /**
  * This class represents the region on the plane.
@@ -125,23 +125,21 @@ public class Region {
    * Do linear transformation on destination region.
    *
    * @param dst destination region
-   * @param stroke stroke to transform
+   * @param curve Bezier curve to transform
    * @return new stroke on destination region
    */
-  public Stroke transformStroke(Region dst, Stroke stroke) {
-    Stroke transformed = stroke.copy();
-    transformed.setStartPoint(transformVector2D(dst, stroke.getStartPoint()));
-    transformed.setEndPoint(transformVector2D(dst, stroke.getEndPoint()));
-    transformed.setControlPoints(new ArrayList<Vector2D>());
-    for (Vector2D controlPoint : stroke.getControlPoints()) {
-      transformed.addControlPoint(transformVector2D(dst, controlPoint));
+  public BezierCurve transformBezierCurve(Region dst, BezierCurve curve) {
+    Vector2D[] transformedPoints = new Vector2D[curve.getPoints().length];
+    for (int i = 0; i < transformedPoints.length; i++) {
+      transformedPoints[i] = (transformVector2D(dst, curve.getPoint(i)));
     }
-
-    return transformed;
+    BezierCurve transformedCurve = new BezierCurve(transformedPoints);
+    transformedCurve.setJoint(curve.isJoint());
+    return transformedCurve;
   }
 
   /**
-   * De linear transformation on destination region.
+   * Do linear transformation on destination region.
    *
    * @param dst destination region
    * @param point point to transform

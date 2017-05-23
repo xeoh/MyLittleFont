@@ -8,11 +8,11 @@ import android.graphics.Path;
 import android.util.AttributeSet;
 import android.view.View;
 
-import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
-
-import kr.ac.kaist.team888.core.Region;
 import kr.ac.kaist.team888.locator.Locator;
+import kr.ac.kaist.team888.region.Region;
 import kr.ac.kaist.team888.util.FeatureController;
+
+import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
 public class FontCanvasView extends View implements FeatureController.OnFeatureChangeListener {
   private static final float CANVAS_OFFSET_RATIO = 0.05f;
