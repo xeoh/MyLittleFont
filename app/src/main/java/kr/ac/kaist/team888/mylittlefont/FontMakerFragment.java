@@ -56,6 +56,22 @@ public class FontMakerFragment extends Fragment {
       public void onStopTrackingTouch(SeekBar seekBar) { }
     });
 
+    // Feature - roundness
+    SeekBar roundnessControl = (SeekBar) view.getRootView().findViewById(R.id.roundnessControl);
+    roundnessControl.setProgress(0);
+    roundnessControl.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+      @Override
+      public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+        FeatureController.getInstance().setRoundness(progress / 100.0);
+      }
+
+      @Override
+      public void onStartTrackingTouch(SeekBar seekBar) { }
+
+      @Override
+      public void onStopTrackingTouch(SeekBar seekBar) { }
+    });
+
     // Feature - weight
     SeekBar weightControl = (SeekBar) view.getRootView().findViewById(R.id.weightControl);
     weightControl.setProgress(50);

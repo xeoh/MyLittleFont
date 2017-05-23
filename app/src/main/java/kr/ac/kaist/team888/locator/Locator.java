@@ -224,7 +224,8 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
       }
       double delta = WEIGHT_DEFAULT
           + (WEIGHT_DEFAULT - 1) * (FeatureController.getInstance().getWeight() - .5);
-      contours.add(BezierCurveUtils.stroke(newCurves, delta));
+      double roundness = FeatureController.getInstance().getRoundness();
+      contours.add(BezierCurveUtils.stroke(newCurves, delta, roundness));
     }
   }
 

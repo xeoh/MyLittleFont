@@ -40,7 +40,7 @@ class OffsetTillerHanson {
    * @return a contour sequence
    */
   protected static ArrayList<BezierCurve> stroke(ArrayList<BezierCurve> bezierCurves,
-                                                 double delta) {
+                                                 double delta, double roundness) {
     ArrayList<BezierCurve> contourUpper = new ArrayList<>();
     ArrayList<BezierCurve> contourLower = new ArrayList<>();
     for (BezierCurve bezierCurve : bezierCurves) {
@@ -70,7 +70,7 @@ class OffsetTillerHanson {
     if (isClosed) {
       joinTwoHalfContours(lastBasePoint, lastPrevPoint, firstNextPoint, contour, delta);
     } else {
-      joinTwoHalfContours(lastBasePoint, lastPrevPoint, contour, delta);
+      joinTwoHalfContours(lastBasePoint, lastPrevPoint, contour, delta, roundness);
     }
 
 
@@ -86,7 +86,7 @@ class OffsetTillerHanson {
     if (isClosed) {
       joinTwoHalfContours(firstBasePoint, firstNextPoint, lastPrevPoint, contour, delta);
     } else {
-      joinTwoHalfContours(firstBasePoint, firstNextPoint, contour, delta);
+      joinTwoHalfContours(firstBasePoint, firstNextPoint, contour, delta, roundness);
     }
 
     return contour;
@@ -112,13 +112,15 @@ class OffsetTillerHanson {
 
       Vector2D[] joiningPoints = {currentUpperCurve.getPoint(currentUpperCurve.getOrder()),
           joiningPoint, nextUpperCurve.getPoint(0)};
-      contour.add(new BezierCurve(new Vector2D[]{joiningPoints[0], joiningPoints[1]}));
-      contour.add(new BezierCurve(new Vector2D[]{joiningPoints[1], joiningPoints[2]}));
+
+      contour.add(new BezierCurve(new Vector2D[] {joiningPoints[0], joiningPoints[1]}));
+      contour.add(new BezierCurve(new Vector2D[] {joiningPoints[1], joiningPoints[2]}));
     }
   }
 
   private static void joinTwoHalfContours(Vector2D basePoint, Vector2D prevPoint,
-                                          ArrayList<BezierCurve> contour, double delta) {
+                                          ArrayList<BezierCurve> contour,
+                                          double delta, double roundness) {
     Vector2D baseUnitVector = basePoint.subtract(prevPoint).normalize();
     Vector2D joiningPoint = basePoint.add(delta, baseUnitVector);
     Vector2D[] joiningPoints = {
@@ -128,9 +130,26 @@ class OffsetTillerHanson {
         offsetPoint(basePoint, null, joiningPoint, -delta),
     };
 
-    contour.add(new BezierCurve(new Vector2D[]{joiningPoints[0], joiningPoints[1]}));
-    contour.add(new BezierCurve(new Vector2D[]{joiningPoints[1], joiningPoints[2]}));
-    contour.add(new BezierCurve(new Vector2D[]{joiningPoints[2], joiningPoints[3]}));
+    Vector2D[][] roundPoints = {
+        roundJoining(joiningPoints[0], joiningPoints[1], joiningPoints[2], delta, roundness),
+        roundJoining(joiningPoints[1], joiningPoints[2], joiningPoints[3], delta, roundness)
+    };
+
+    contour.add(new BezierCurve(new Vector2D[] {
+        joiningPoints[0], roundPoints[0][0]
+    }));
+    contour.add(new BezierCurve(new Vector2D[] {
+        roundPoints[0][0], joiningPoints[1],roundPoints[0][1]
+    }));
+    contour.add(new BezierCurve(new Vector2D[] {
+        roundPoints[0][1], roundPoints[1][0]
+    }));
+    contour.add(new BezierCurve(new Vector2D[] {
+        roundPoints[1][0], joiningPoints[2], roundPoints[1][1]
+    }));
+    contour.add(new BezierCurve(new Vector2D[] {
+        roundPoints[1][1], joiningPoints[3]
+    }));
   }
 
   private static void joinTwoHalfContours(Vector2D basePoint, Vector2D prevPoint,
@@ -146,6 +165,16 @@ class OffsetTillerHanson {
     contour.add(new BezierCurve(new Vector2D[]{joiningPoints[0], joiningPoints[1]}));
     contour.add(new BezierCurve(new Vector2D[]{joiningPoints[1], joiningPoints[2]}));
     contour.add(new BezierCurve(new Vector2D[]{joiningPoints[2], joiningPoints[3]}));
+  }
+
+  private static Vector2D[] roundJoining(Vector2D prevPoint, Vector2D joiningPoint,
+                                         Vector2D nextPoint, double delta, double roundness) {
+    Vector2D prevUnitVector = prevPoint.subtract(joiningPoint).normalize();
+    Vector2D nextUnitVector = nextPoint.subtract(joiningPoint).normalize();
+    return new Vector2D[] {
+        joiningPoint.add(delta * roundness, prevUnitVector),
+        joiningPoint.add(delta * roundness, nextUnitVector)
+    };
   }
 
   private static Vector2D offsetPoint(Vector2D currentPoint, Vector2D prevPoint,
