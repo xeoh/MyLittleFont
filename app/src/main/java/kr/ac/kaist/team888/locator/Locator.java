@@ -6,7 +6,6 @@ import com.google.gson.reflect.TypeToken;
 
 import android.graphics.Path;
 
-import kr.ac.kaist.team888.core.Point2D;
 import kr.ac.kaist.team888.core.Region;
 import kr.ac.kaist.team888.core.Stroke;
 import kr.ac.kaist.team888.hangulcharacter.HangulCharacter;
@@ -42,8 +41,8 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
 
   private ArrayList<Path> contourPaths;
   private ArrayList<Path> skeletonPaths;
-  private ArrayList<Point2D> fixedCircles;
-  private ArrayList<Point2D> controlCircles;
+  private ArrayList<Vector2D> fixedCircles;
+  private ArrayList<Vector2D> controlCircles;
 
   /**
    * Constructs a locator object for given Hangul letter.
@@ -164,7 +163,7 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
    *
    * @return array list of fixed point
    */
-  public ArrayList<Point2D> getFixedCircles() {
+  public ArrayList<Vector2D> getFixedCircles() {
     return fixedCircles;
   }
 
@@ -173,7 +172,7 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
    *
    * @return array list of control point
    */
-  public ArrayList<Point2D> getControlCircles() {
+  public ArrayList<Vector2D> getControlCircles() {
     return controlCircles;
   }
 
@@ -193,19 +192,19 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
           Stroke rightStrokeData = j != skeletonData.size() - 1
               ? skeletonData.get(j + 1) : skeletonData.get(0);
 
-          Point2D leftVector = leftStrokeData.getStartPoint().sub(leftStrokeData.getEndPoint());
-          Point2D rightVector = rightStrokeData.getEndPoint().sub(rightStrokeData.getStartPoint());
+          Vector2D leftVector = leftStrokeData.getStartPoint().subtract(leftStrokeData.getEndPoint());
+          Vector2D rightVector = rightStrokeData.getEndPoint().subtract(rightStrokeData.getStartPoint());
 
-          float scale = FeatureController.getInstance().getCurve() * CURVE_MAX;
+          double scale = FeatureController.getInstance().getCurve() * CURVE_MAX;
           leftStroke.setEndPoint(leftStrokeData
-              .getEndPoint().add(leftVector.scale(scale / leftVector.length())));
+              .getEndPoint().add(leftVector.scalarMultiply(scale / leftVector.getNorm())));
           joint.setStartPoint(leftStrokeData
-              .getEndPoint().add(leftVector.scale(scale / leftVector.length())));
+              .getEndPoint().add(leftVector.scalarMultiply(scale / leftVector.getNorm())));
 
           rightStroke.setStartPoint(rightStrokeData
-              .getStartPoint().add(rightVector.scale(scale / rightVector.length())));
+              .getStartPoint().add(rightVector.scalarMultiply(scale / rightVector.getNorm())));
           joint.setEndPoint(rightStrokeData
-              .getStartPoint().add(rightVector.scale(scale / rightVector.length())));
+              .getStartPoint().add(rightVector.scalarMultiply(scale / rightVector.getNorm())));
         }
       }
     }
@@ -219,14 +218,15 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
       ArrayList<BezierCurve> bezierCurves = new ArrayList<>();
       for (Stroke stroke: strokes) {
         ArrayList<Vector2D> points = new ArrayList<>();
-        points.add(new Vector2D(stroke.getStartPoint().getX(), stroke.getStartPoint().getY()));
-        ArrayList<Point2D> controlPoints = stroke.getControlPoints();
-        for (Point2D point : controlPoints) {
-          points.add(new Vector2D(point.getX(), point.getY()));
+        points.add(new Vector2D(1, stroke.getStartPoint()));
+        ArrayList<Vector2D> controlPoints = stroke.getControlPoints();
+        for (Vector2D point : controlPoints) {
+          points.add(new Vector2D(1, point));
         }
-        points.add(new Vector2D(stroke.getEndPoint().getX(), stroke.getEndPoint().getY()));
+        points.add(new Vector2D(1, stroke.getEndPoint()));
 
         BezierCurve bezierCurve = new BezierCurve(points.toArray(new Vector2D[points.size()]));
+
         if (bezierCurve.getOrder() <= 2
             && bezierCurve.getPoint(0).equals(bezierCurve.getPoint(bezierCurve.getOrder()))) {
           continue;
@@ -242,13 +242,13 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
       for (BezierCurve bezierCurve : contourBezier) {
         Vector2D[] controlVectors = bezierCurve.getPoints();
         Stroke.StrokeBuilder builder = new Stroke.StrokeBuilder();
-        builder.setStartPoint(new Point2D((float) controlVectors[0].getX(),
-            (float) controlVectors[0].getY()));
-        builder.setEndPoint(new Point2D((float) controlVectors[controlVectors.length - 1].getX(),
-            (float) controlVectors[controlVectors.length - 1].getY()));
+        builder.setStartPoint(new Vector2D((double) controlVectors[0].getX(),
+            (double) controlVectors[0].getY()));
+        builder.setEndPoint(new Vector2D((double) controlVectors[controlVectors.length - 1].getX(),
+            (double) controlVectors[controlVectors.length - 1].getY()));
         for (int i = 1; i < controlVectors.length - 1; i++) {
-          builder.addControlPoint(new Point2D((float) controlVectors[i].getX(),
-              (float) controlVectors[i].getY()));
+          builder.addControlPoint(new Vector2D((double) controlVectors[i].getX(),
+              (double) controlVectors[i].getY()));
         }
         contour.add(builder.build());
       }
@@ -262,8 +262,8 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
     for (ArrayList<Stroke> strokes : strokesSet) {
       Path path = new Path();
       Stroke transStrokeInitial = ORIGIN_REGION.transformStroke(canvasRegion, strokes.get(0));
-      path.moveTo(transStrokeInitial.getStartPoint().getX(),
-          transStrokeInitial.getStartPoint().getY());
+      path.moveTo((float) transStrokeInitial.getStartPoint().getX(),
+          (float) transStrokeInitial.getStartPoint().getY());
 
       for (Stroke stroke : strokes) {
         Stroke transStroke = ORIGIN_REGION.transformStroke(canvasRegion, stroke);
@@ -271,17 +271,17 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
           fixedCircles.add(transStroke.getStartPoint());
         }
 
-        ArrayList<Point2D> controlPoints = transStroke.getControlPoints();
+        ArrayList<Vector2D> controlPoints = transStroke.getControlPoints();
         for (int i = 0; i < controlPoints.size(); i++) {
           if (i == controlPoints.size() - 1) {
             break;
           }
 
-          float controlX = controlPoints.get(i).getX();
-          float controlY = controlPoints.get(i).getY();
+          float controlX = (float) controlPoints.get(i).getX();
+          float controlY = (float) controlPoints.get(i).getY();
 
-          float endX = (controlPoints.get(i + 1).getX() + controlX) / 2;
-          float endY = (controlPoints.get(i + 1).getY() + controlY) / 2;
+          float endX = (float) (controlPoints.get(i + 1).getX() + controlX) / 2;
+          float endY = (float) (controlPoints.get(i + 1).getY() + controlY) / 2;
 
           path.quadTo(controlX, controlY, endX, endY);
           if (showPoints) {
@@ -290,14 +290,15 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
         }
 
         if (controlPoints.isEmpty()) {
-          path.lineTo(transStroke.getEndPoint().getX(), transStroke.getEndPoint().getY());
+          path.lineTo((float) transStroke.getEndPoint().getX(),
+              (float) transStroke.getEndPoint().getY());
           if (showPoints) {
             fixedCircles.add(transStroke.getEndPoint());
           }
         } else {
-          Point2D lastControlPoint = controlPoints.get(controlPoints.size() - 1);
-          path.quadTo(lastControlPoint.getX(), lastControlPoint.getY(),
-              transStroke.getEndPoint().getX(), transStroke.getEndPoint().getY());
+          Vector2D lastControlPoint = controlPoints.get(controlPoints.size() - 1);
+          path.quadTo((float) lastControlPoint.getX(), (float) lastControlPoint.getY(),
+              (float) transStroke.getEndPoint().getX(), (float) transStroke.getEndPoint().getY());
           if (showPoints) {
             controlCircles.add(lastControlPoint);
             fixedCircles.add(transStroke.getEndPoint());

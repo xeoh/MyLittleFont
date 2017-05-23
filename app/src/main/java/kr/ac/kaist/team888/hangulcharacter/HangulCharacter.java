@@ -21,8 +21,8 @@ import java.util.HashMap;
 public abstract class HangulCharacter implements FeatureController.OnFeatureChangeListener {
   private static final String NO_DATA_ERROR = "No Json Data for character \'%s\'";
   public static final Region ORIGIN_REGION = new Region(0, 940, -200, 800);
-  private static final float X_OFFSET = 35f;
-  private static final float Y_OFFSET = 30f;
+  private static final double X_OFFSET = 35;
+  private static final double Y_OFFSET = 30;
   private static final int PRIORITY = 0;
 
   private static final String SKELETONS_KEY = "skeletons";
@@ -85,10 +85,10 @@ public abstract class HangulCharacter implements FeatureController.OnFeatureChan
   }
 
   private Region calculateRegion() {
-    float minX = ORIGIN_REGION.getMaxX();
-    float maxX = ORIGIN_REGION.getMinX();
-    float minY = ORIGIN_REGION.getMaxY();
-    float maxY = ORIGIN_REGION.getMinY();
+    double minX = ORIGIN_REGION.getMaxX();
+    double maxX = ORIGIN_REGION.getMinX();
+    double minY = ORIGIN_REGION.getMaxY();
+    double maxY = ORIGIN_REGION.getMinY();
 
     for (ArrayList<Stroke> skeleton : skeletonsData) {
       for (Stroke stroke : skeleton) {
