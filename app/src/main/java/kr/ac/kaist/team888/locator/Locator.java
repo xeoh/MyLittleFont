@@ -13,6 +13,10 @@ import kr.ac.kaist.team888.hangulcharacter.HangulCharacter;
 import kr.ac.kaist.team888.util.FeatureController;
 import kr.ac.kaist.team888.util.HangulDecomposer;
 import kr.ac.kaist.team888.util.JsonLoader;
+import kr.ac.kaist.team888.util.bezier.BezierCurve;
+import kr.ac.kaist.team888.util.bezier.BezierCurveUtils;
+
+import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -34,8 +38,10 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
   private ArrayList<HangulCharacter> characters;
   private ArrayList<ArrayList<Stroke>> skeletonsData;
   private ArrayList<ArrayList<Stroke>> skeletons;
+  private ArrayList<ArrayList<Stroke>> contours;
 
-  private ArrayList<Path> paths;
+  private ArrayList<Path> contourPaths;
+  private ArrayList<Path> skeletonPaths;
   private ArrayList<Point2D> fixedCircles;
   private ArrayList<Point2D> controlCircles;
 
@@ -82,6 +88,7 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
     }
 
     applyCurve();
+    applyContour();
   }
 
   private ArrayList<Region> calculateRegions() {
@@ -116,7 +123,8 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
   /**
    * Recalculate Paths and Circles respect to canvas region.
    *
-   * <p>paths (from {@link Locator#getPaths()}),
+   * <p>contourPaths (from {@link Locator#getContourPaths()}),
+   * skeletonPaths (from {@link Locator#getSkeletonPaths()}),
    * fixedCircles (from {@link Locator#getFixedCircles()}),
    * controlCircles (from {@link Locator#getControlCircles()})
    * are updated from this function call.
@@ -124,20 +132,31 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
    * @param canvasRegion Region of canvas
    */
   public void invalidate(Region canvasRegion) {
-    paths = new ArrayList<>();
+    contourPaths = new ArrayList<>();
+    skeletonPaths = new ArrayList<>();
     fixedCircles = new ArrayList<>();
     controlCircles = new ArrayList<>();
 
-    setXrayPaths(canvasRegion);
+    setPaths(canvasRegion, skeletons, skeletonPaths, true);
+    setPaths(canvasRegion, contours, contourPaths, false);
   }
 
   /**
-   * Get array list of paths to draw on canvas.
+   * Get array list of contourPaths to draw on canvas.
    *
-   * @return array list of paths
+   * @return array list of contourPaths
    */
-  public ArrayList<Path> getPaths() {
-    return paths;
+  public ArrayList<Path> getContourPaths() {
+    return contourPaths;
+  }
+
+  /**
+   * Get array list of skeletonPaths to draw on canvas.
+   *
+   * @return array list of skeletonPaths
+   */
+  public ArrayList<Path> getSkeletonPaths() {
+    return skeletonPaths;
   }
 
   /**
@@ -192,14 +211,65 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
     }
   }
 
-  private void setXrayPaths(Region canvasRegion) {
-    for (ArrayList<Stroke> skeleton : skeletons) {
-      Path path = new Path();
+  private void applyContour() {
+    contours = new ArrayList<>();
 
-      for (Stroke stroke : skeleton) {
+    for (ArrayList<Stroke> strokes: skeletons) {
+      // Convert Bezier curves to strokes
+      ArrayList<BezierCurve> bezierCurves = new ArrayList<>();
+      for (Stroke stroke: strokes) {
+        ArrayList<Vector2D> points = new ArrayList<>();
+        points.add(new Vector2D(stroke.getStartPoint().getX(), stroke.getStartPoint().getY()));
+        ArrayList<Point2D> controlPoints = stroke.getControlPoints();
+        for (Point2D point : controlPoints) {
+          points.add(new Vector2D(point.getX(), point.getY()));
+        }
+        points.add(new Vector2D(stroke.getEndPoint().getX(), stroke.getEndPoint().getY()));
+
+        BezierCurve bezierCurve = new BezierCurve(points.toArray(new Vector2D[points.size()]));
+        if (bezierCurve.getOrder() <= 2
+            && bezierCurve.getPoint(0).equals(bezierCurve.getPoint(bezierCurve.getOrder()))) {
+          continue;
+        }
+        bezierCurves.add(bezierCurve);
+      }
+
+      // Generate contour of path
+      ArrayList<BezierCurve> contourBezier = BezierCurveUtils.stroke(bezierCurves, 30);
+
+      // Convert Bezier curves to strokes
+      ArrayList<Stroke> contour = new ArrayList<>();
+      for (BezierCurve bezierCurve : contourBezier) {
+        Vector2D[] controlVectors = bezierCurve.getPoints();
+        Stroke.StrokeBuilder builder = new Stroke.StrokeBuilder();
+        builder.setStartPoint(new Point2D((float) controlVectors[0].getX(),
+            (float) controlVectors[0].getY()));
+        builder.setEndPoint(new Point2D((float) controlVectors[controlVectors.length - 1].getX(),
+            (float) controlVectors[controlVectors.length - 1].getY()));
+        for (int i = 1; i < controlVectors.length - 1; i++) {
+          builder.addControlPoint(new Point2D((float) controlVectors[i].getX(),
+              (float) controlVectors[i].getY()));
+        }
+        contour.add(builder.build());
+      }
+
+      contours.add(contour);
+    }
+  }
+
+  private void setPaths(Region canvasRegion, ArrayList<ArrayList<Stroke>> strokesSet,
+                        ArrayList<Path> paths, boolean showPoints) {
+    for (ArrayList<Stroke> strokes : strokesSet) {
+      Path path = new Path();
+      Stroke transStrokeInitial = ORIGIN_REGION.transformStroke(canvasRegion, strokes.get(0));
+      path.moveTo(transStrokeInitial.getStartPoint().getX(),
+          transStrokeInitial.getStartPoint().getY());
+
+      for (Stroke stroke : strokes) {
         Stroke transStroke = ORIGIN_REGION.transformStroke(canvasRegion, stroke);
-        path.moveTo(transStroke.getStartPoint().getX(), transStroke.getStartPoint().getY());
-        fixedCircles.add(transStroke.getStartPoint());
+        if (showPoints) {
+          fixedCircles.add(transStroke.getStartPoint());
+        }
 
         ArrayList<Point2D> controlPoints = transStroke.getControlPoints();
         for (int i = 0; i < controlPoints.size(); i++) {
@@ -214,18 +284,24 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
           float endY = (controlPoints.get(i + 1).getY() + controlY) / 2;
 
           path.quadTo(controlX, controlY, endX, endY);
-          controlCircles.add(controlPoints.get(i));
+          if (showPoints) {
+            controlCircles.add(controlPoints.get(i));
+          }
         }
 
         if (controlPoints.isEmpty()) {
           path.lineTo(transStroke.getEndPoint().getX(), transStroke.getEndPoint().getY());
-          fixedCircles.add(transStroke.getEndPoint());
+          if (showPoints) {
+            fixedCircles.add(transStroke.getEndPoint());
+          }
         } else {
           Point2D lastControlPoint = controlPoints.get(controlPoints.size() - 1);
           path.quadTo(lastControlPoint.getX(), lastControlPoint.getY(),
               transStroke.getEndPoint().getX(), transStroke.getEndPoint().getY());
-          controlCircles.add(lastControlPoint);
-          fixedCircles.add(transStroke.getEndPoint());
+          if (showPoints) {
+            controlCircles.add(lastControlPoint);
+            fixedCircles.add(transStroke.getEndPoint());
+          }
         }
       }
       paths.add(path);
@@ -235,6 +311,7 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
   @Override
   public void onFeatureChange() {
     applyCurve();
+    applyContour();
   }
 
   @Override
