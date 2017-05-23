@@ -1,4 +1,4 @@
-package kr.ac.kaist.team888.util.bezier;
+package kr.ac.kaist.team888.bezier;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
@@ -103,7 +103,7 @@ public class BezierCurve extends ParametricPolynomialCurve {
     // Copy points.
     Vector2D[] copiedPoints = points.clone();
     for (int i = 0; i <= order; i++) {
-      copiedPoints[i] = new Vector2D(copiedPoints[i].toArray());
+      copiedPoints[i] = new Vector2D(1, copiedPoints[i]);
     }
 
     // Calculate coefficients.
@@ -168,7 +168,7 @@ public class BezierCurve extends ParametricPolynomialCurve {
   public Vector2D[] getPoints() {
     Vector2D[] points = new Vector2D[this.points.length];
     for (int i = 0; i < points.length; i++) {
-      points[i] = new Vector2D(this.points[i].toArray());
+      points[i] = new Vector2D(1, this.points[i]);
     }
     return points;
   }
@@ -184,7 +184,11 @@ public class BezierCurve extends ParametricPolynomialCurve {
       throw new OutOfRangeException(index, 0, points.length - 1);
     }
 
-    return new Vector2D(points[index].toArray());
+    return new Vector2D(1, points[index]);
+  }
+
+  public Vector2D getStartPoint() {
+    return new Vector2D(1, points[0]);
   }
 
   /**
@@ -242,6 +246,11 @@ public class BezierCurve extends ParametricPolynomialCurve {
     Vector2D[] points = getPoints();
     ArrayUtils.reverse(points);
     return new BezierCurve(points);
+  }
+
+  @Override
+  public BezierCurve clone() {
+    return new BezierCurve(points, offsetMethod);
   }
 
   @Override

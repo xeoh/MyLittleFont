@@ -12,8 +12,8 @@ import kr.ac.kaist.team888.hangulcharacter.HangulCharacter;
 import kr.ac.kaist.team888.util.FeatureController;
 import kr.ac.kaist.team888.util.HangulDecomposer;
 import kr.ac.kaist.team888.util.JsonLoader;
-import kr.ac.kaist.team888.util.bezier.BezierCurve;
-import kr.ac.kaist.team888.util.bezier.BezierCurveUtils;
+import kr.ac.kaist.team888.bezier.BezierCurve;
+import kr.ac.kaist.team888.bezier.BezierCurveUtils;
 
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
