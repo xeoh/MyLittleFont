@@ -9,8 +9,8 @@ public enum Hangul {
   INIT_GIYEOK    ("Giyeok",       0x1100),  // ㄱ
   INIT_SS_GIYEOK ("SsangGiyeok",  0x1101),  // ㄲ
   INIT_NIEUN     ("Nieum",        0x1102),  // ㄴ
-  INIT_DIGEUT    ("Degeut",       0x1103),  // ㄷ
-  INIT_SS_DIGEUT ("SsangDegeut",  0x1104),  // ㄸ
+  INIT_DIGEUT    ("Digeut",       0x1103),  // ㄷ
+  INIT_SS_DIGEUT ("SsangDigeut",  0x1104),  // ㄸ
   INIT_RIEUL     ("Rieul",        0x1105),  // ㄹ
   INIT_MIEUM     ("Mieum",        0x1106),  // ㅁ
   INIT_BIEUP     ("Bieup",        0x1107),  // ㅂ
@@ -40,39 +40,39 @@ public enum Hangul {
   MEDI_WAE       ("Wae", 0x116D),           // ㅙ
   MEDI_OE        ("Oe",  0x116E),           // ㅚ
   MEDI_UH        ("Uh",  0x116F),           // ㅜ
-  MEDI_WO        ("Wo",  0x1170),           // ㅝ
+  MEDI_WOE       ("Weo", 0x1170),           // ㅝ
   MEDI_WE        ("We",  0x1171),           // ㅞ
   MEDI_WI        ("Wi",  0x1172),           // ㅟ
   MEDI_EU        ("Eu",  0x1173),           // ㅡ
-  MEDI_UI        ("Ui",  0x1174),           // ㅢ
+  MEDI_YI        ("Yi",  0x1174),           // ㅢ
   MEDI_IH        ("Ih",  0x1175),           // ㅣ
-  FIN_GIYEOK        ("", 0x11A8),
-  FIN_SS_GIYEOK     ("", 0x11A9),
-  FIN_GIYEOK_SIOT   ("", 0x11AA),
-  FIN_NIEUN         ("", 0x11AB),
-  FIN_NIEUN_JIEUT   ("", 0x11AC),
-  FIN_NIEUN_HIEUT   ("", 0x11AD),
-  FIN_DIGEUT        ("", 0x11AE),
-  FIN_RIEUL         ("", 0x11AF),
-  FIN_RIEUL_GIYEOK  ("", 0x11B0),
-  FIN_RIEUL_MIEUM   ("", 0x11B1),
-  FIN_RIEUL_BIEUP   ("", 0x11B2),
-  FIN_RIEUL_SIOT    ("", 0x11B3),
-  FIN_RIEUL_TIEUT   ("", 0x11B4),
-  FIN_RIEUL_PIEUP   ("", 0x11B5),
-  FIN_RIEUL_HIEUT   ("", 0x11B6),
-  FIN_MIEUM         ("", 0x11B7),
-  FIN_BIEUP         ("", 0x11B8),
-  FIN_BIEUP_SIOT    ("", 0x11B9),
-  FIN_SIOT          ("", 0x11BA),
-  FIN_SS_SIOT       ("", 0x11BB),
-  FIN_IEUNG         ("", 0x11BC),
-  FIN_JIEUT         ("", 0x11BD),
-  FIN_CHIEUT        ("", 0x11BE),
-  FIN_KIEUK         ("", 0x11BF),
-  FIN_TIEUT         ("", 0x11C0),
-  FIN_PIEUP         ("", 0x11C1),
-  FIN_HIEUT         ("", 0x11C2),
+  FIN_GIYEOK        ("Giyeok",      0x11A8),// ㄱ
+  FIN_SS_GIYEOK     ("SsangGiyeok", 0x11A9),// ㄲ
+  FIN_GIYEOK_SIOT   ("GiyeokSiot",  0x11AA),// ㄱㅅ
+  FIN_NIEUN         ("NieumJieut",  0x11AB),// ㄴ
+  FIN_NIEUN_JIEUT   ("NieumJieut",  0x11AC),// ㄴㅈ
+  FIN_NIEUN_HIEUT   ("NieumJieut",  0x11AD),// ㄴㅎ
+  FIN_DIGEUT        ("Digeut",      0x11AE),// ㄷ
+  FIN_RIEUL         ("Rieul",       0x11AF),// ㄹ
+  FIN_RIEUL_GIYEOK  ("RieulGiyeok", 0x11B0),// ㄹㄱ
+  FIN_RIEUL_MIEUM   ("RieulMieum",  0x11B1),// ㄹㅁ
+  FIN_RIEUL_BIEUP   ("RieulBieup",  0x11B2),// ㄹㅂ
+  FIN_RIEUL_SIOT    ("RieulSiot",   0x11B3),// ㄹㅅ
+  FIN_RIEUL_TIEUT   ("RieulTieut",  0x11B4),// ㄹㅌ
+  FIN_RIEUL_PIEUP   ("RieulPieup",  0x11B5),// ㄹㅍ
+  FIN_RIEUL_HIEUT   ("RieulHieut",  0x11B6),// ㄹㅎ
+  FIN_MIEUM         ("Mieum",       0x11B7),// ㅁ
+  FIN_BIEUP         ("Bieup",       0x11B8),// ㅂ
+  FIN_BIEUP_SIOT    ("BieupSiot",   0x11B9),// ㅃ
+  FIN_SIOT          ("Siot",        0x11BA),// ㅅ
+  FIN_SS_SIOT       ("SsangSiot",   0x11BB),// ㅆ
+  FIN_IEUNG         ("Ieung",       0x11BC),// ㅇ
+  FIN_JIEUT         ("Jieut",       0x11BD),// ㅈ
+  FIN_CHIEUT        ("Chieut",      0x11BE),// ㅊ
+  FIN_KIEUK         ("Kieuk",       0x11BF),// ㅋ
+  FIN_TIEUT         ("Tieut",       0x11C0),// ㅌ
+  FIN_PIEUP         ("Pieup",       0x11C1),// ㅍ
+  FIN_HIEUT         ("Hieut",       0x11C2),// ㅎ
   NONE              ("None", -1);
 
   private static final int INITIAL_COUNT = 19;
@@ -95,10 +95,10 @@ public enum Hangul {
   }
 
   /**
-   * Get {@link kr.ac.kaist.team888.hangulcharacter.Hangul} class from UNICODE value.
+   * Get {@link Hangul} class from UNICODE value.
    *
    * @param value UNICODE value
-   * @return Correspond {@link kr.ac.kaist.team888.hangulcharacter.Hangul} value
+   * @return Correspond {@link Hangul} value
    */
   public static Hangul fromInt(int value) {
     if (INITIAL_UNICODE_BEGIN <= value && value <= INITIAL_UNICODE_END) {
