@@ -22,14 +22,14 @@ import java.util.ArrayList;
  */
 public class HangulDecomposer {
   /**
-   * Returns an array list of {@link kr.ac.kaist.team888.hangulcharacter.HangulCharacter} objects of
+   * Returns an array list of {@link HangulCharacter} objects of
    * a given {@code letter} by normalizing it.
    *
    * <p> If {@code letter} is not a supported Hangul letter, a returned array would contain
    * meaningless values.
    *
    * @param letter a Hangul letter to decompose
-   * @return an array list of {@link kr.ac.kaist.team888.hangulcharacter.HangulCharacter} objects of
+   * @return an array list of {@link HangulCharacter} objects of
    * {@code letter}
    */
   public static ArrayList<HangulCharacter> decompose(char letter) {
