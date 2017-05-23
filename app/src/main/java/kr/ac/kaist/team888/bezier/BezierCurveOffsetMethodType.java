@@ -1,4 +1,4 @@
-package kr.ac.kaist.team888.util.bezier;
+package kr.ac.kaist.team888.bezier;
 
 /**
  * Enumeration for supported methods to offset Bezier curves.

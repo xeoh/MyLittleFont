@@ -1,4 +1,4 @@
-package kr.ac.kaist.team888.util.bezier;
+package kr.ac.kaist.team888.bezier;
 
 import org.apache.commons.math3.analysis.UnivariateVectorFunction;
 import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;

@@ -1,14 +1,23 @@
 package kr.ac.kaist.team888.hangulcharacter;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
 
-import kr.ac.kaist.team888.core.Region;
-import kr.ac.kaist.team888.core.Stroke;
+import kr.ac.kaist.team888.bezier.BezierCurve;
+import kr.ac.kaist.team888.bezier.BezierCurveUtils;
+import kr.ac.kaist.team888.region.Region;
 import kr.ac.kaist.team888.util.Alert;
 import kr.ac.kaist.team888.util.FeatureController;
 import kr.ac.kaist.team888.util.JsonLoader;
+
+import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -21,20 +30,20 @@ import java.util.HashMap;
 public abstract class HangulCharacter implements FeatureController.OnFeatureChangeListener {
   private static final String NO_DATA_ERROR = "No Json Data for character \'%s\'";
   public static final Region ORIGIN_REGION = new Region(0, 940, -200, 800);
-  private static final float X_OFFSET = 35f;
-  private static final float Y_OFFSET = 30f;
+  private static final double X_OFFSET = 35;
+  private static final double Y_OFFSET = 30;
   private static final int PRIORITY = 0;
 
   private static final String SKELETONS_KEY = "skeletons";
-  private ArrayList<ArrayList<Stroke>> skeletonsData;
-  private ArrayList<ArrayList<Stroke>> skeletons;
+  private ArrayList<ArrayList<BezierCurve>> skeletonsData;
+  private ArrayList<ArrayList<BezierCurve>> skeletons;
   private Region region;
   protected JsonObject data;
 
   /**
    * Super class constructor.
    *
-   * <p> Load {@link Stroke} data by class name. Class name should match to Json file's key.
+   * <p> Load {@link BezierCurve} data by class name. Class name should match to Json file's key.
    */
   protected HangulCharacter() {
     String className = this.getClass().getSimpleName();
@@ -45,16 +54,30 @@ public abstract class HangulCharacter implements FeatureController.OnFeatureChan
       return;
     }
 
-    Gson gson = new Gson();
-    Type collectionType = new TypeToken<Collection<Collection<Stroke>>>(){}.getType();
+    Type collectionType = new TypeToken<Collection<Collection<BezierCurve>>>(){}.getType();
+    GsonBuilder gsonBuilder = new GsonBuilder();
+    gsonBuilder.registerTypeAdapter(BezierCurve.class, new JsonDeserializer<BezierCurve>() {
+      @Override
+      public BezierCurve deserialize(JsonElement json, Type typeOfT,
+                                     JsonDeserializationContext context) throws JsonParseException {
+        JsonArray jsonPoints = json.getAsJsonObject().getAsJsonArray("points");
+        Gson gson = new Gson();
+        Vector2D[] points = new Vector2D[jsonPoints.size()];
+        for (int i = 0; i < points.length; i++) {
+          points[i] = gson.fromJson(jsonPoints.get(i), Vector2D.class);
+        }
+        return new BezierCurve(points);
+      }
+    });
 
-    skeletonsData = gson.fromJson(data.getAsJsonArray(SKELETONS_KEY), collectionType);
+    skeletonsData = gsonBuilder.create()
+        .fromJson(data.getAsJsonArray(SKELETONS_KEY), collectionType);
     addJointStroke();
     skeletons = new ArrayList<>();
     for (int i = 0; i < skeletonsData.size(); i++) {
-      skeletons.add(i, new ArrayList<Stroke>());
+      skeletons.add(i, new ArrayList<BezierCurve>());
       for (int j = 0; j < skeletonsData.get(i).size(); j++) {
-        skeletons.get(i).add(skeletonsData.get(i).get(j).copy());
+        skeletons.get(i).add(skeletonsData.get(i).get(j).clone());
       }
     }
     region = calculateRegion();
@@ -63,39 +86,40 @@ public abstract class HangulCharacter implements FeatureController.OnFeatureChan
   }
 
   private void addJointStroke() {
-    for (ArrayList<Stroke> skeleton : skeletonsData) {
-      HashMap<Stroke, Stroke> joints = new HashMap<>();
+    for (ArrayList<BezierCurve> skeleton : skeletonsData) {
+      HashMap<BezierCurve, BezierCurve> joints = new HashMap<>();
       for (int i = 0; i < skeleton.size(); i++) {
-        Stroke nextStroke = (i == skeleton.size() - 1) ? skeleton.get(0) : skeleton.get(i + 1);
+        BezierCurve nextCurve = (i == skeleton.size() - 1) ? skeleton.get(0) : skeleton.get(i + 1);
 
-        if (skeleton.get(i).getEndPoint().equals(nextStroke.getStartPoint())) {
-          joints.put(skeleton.get(i), new Stroke.StrokeBuilder()
-              .setStartPoint(skeleton.get(i).getEndPoint())
-              .setEndPoint(skeleton.get(i).getEndPoint())
-              .addControlPoint(skeleton.get(i).getEndPoint())
-              .setJoint(true)
-              .build());
+        if (skeleton.get(i).getEndPoint().equals(nextCurve.getStartPoint())) {
+          BezierCurve jointCurve = new BezierCurve(new Vector2D[] {
+              skeleton.get(i).getEndPoint(),
+              skeleton.get(i).getEndPoint(),
+              skeleton.get(i).getEndPoint()
+          });
+          jointCurve.setJoint(true);
+          joints.put(skeleton.get(i), jointCurve);
         }
       }
 
-      for (Stroke pos : joints.keySet()) {
+      for (BezierCurve pos : joints.keySet()) {
         skeleton.add(skeleton.indexOf(pos) + 1, joints.get(pos));
       }
     }
   }
 
   private Region calculateRegion() {
-    float minX = ORIGIN_REGION.getMaxX();
-    float maxX = ORIGIN_REGION.getMinX();
-    float minY = ORIGIN_REGION.getMaxY();
-    float maxY = ORIGIN_REGION.getMinY();
+    double minX = ORIGIN_REGION.getMaxX();
+    double maxX = ORIGIN_REGION.getMinX();
+    double minY = ORIGIN_REGION.getMaxY();
+    double maxY = ORIGIN_REGION.getMinY();
 
-    for (ArrayList<Stroke> skeleton : skeletonsData) {
-      for (Stroke stroke : skeleton) {
-        minX = Math.min(minX, stroke.getMinX());
-        maxX = Math.max(maxX, stroke.getMaxX());
-        minY = Math.min(minY, stroke.getMinY());
-        maxY = Math.max(maxY, stroke.getMaxY());
+    for (ArrayList<BezierCurve> skeleton : skeletonsData) {
+      for (BezierCurve bc : skeleton) {
+        minX = Math.min(minX, BezierCurveUtils.getMinX(bc));
+        maxX = Math.max(maxX, BezierCurveUtils.getMaxX(bc));
+        minY = Math.min(minY, BezierCurveUtils.getMinY(bc));
+        maxY = Math.max(maxY, BezierCurveUtils.getMaxY(bc));
       }
     }
 
@@ -111,9 +135,9 @@ public abstract class HangulCharacter implements FeatureController.OnFeatureChan
   /**
    * Get array of skeletons.
    *
-   * @return skeletons which is composed of 2D {@link kr.ac.kaist.team888.core.Stroke} array.
+   * @return skeletons which is composed of 2D {@link kr.ac.kaist.team888.bezier.BezierCurve} array.
    */
-  public ArrayList<ArrayList<Stroke>> getSkeletons() {
+  public ArrayList<ArrayList<BezierCurve>> getSkeletons() {
     return skeletons;
   }
 
@@ -133,4 +157,5 @@ public abstract class HangulCharacter implements FeatureController.OnFeatureChan
   public int getPriority() {
     return PRIORITY;
   }
+
 }

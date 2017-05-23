@@ -1,6 +1,8 @@
-package kr.ac.kaist.team888.core;
+package kr.ac.kaist.team888.region;
 
-import java.util.ArrayList;
+import kr.ac.kaist.team888.bezier.BezierCurve;
+
+import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
 /**
  * This class represents the region on the plane.
@@ -9,10 +11,10 @@ import java.util.ArrayList;
  * [minX, maxX]×[minY, minY]. This class uses those four values to determine a specific region.
  */
 public class Region {
-  private float minX;
-  private float maxX;
-  private float minY;
-  private float maxY;
+  private double minX;
+  private double maxX;
+  private double minY;
+  private double maxY;
 
   /**
    * Makes a new region with given four vertices.
@@ -22,7 +24,7 @@ public class Region {
    * @param minY a minimum value of a region in y-axis.
    * @param maxY a maximum value of a region in y-axis.
    */
-  public Region(float minX, float maxX, float minY, float maxY) {
+  public Region(double minX, double maxX, double minY, double maxY) {
     this.minX = minX;
     this.maxX = maxX;
     this.minY = minY;
@@ -34,8 +36,8 @@ public class Region {
    *
    * @return a point at the bottom-left corner of the region.
    */
-  public Point2D getMinPoint() {
-    return new Point2D(minX, minY);
+  public Vector2D getMinPoint() {
+    return new Vector2D(minX, minY);
   }
 
   /**
@@ -43,8 +45,8 @@ public class Region {
    *
    * @return a point at the top-right corner of the region.
    */
-  public Point2D getMaxPoint() {
-    return new Point2D(maxX, maxY);
+  public Vector2D getMaxPoint() {
+    return new Vector2D(maxX, maxY);
   }
 
   /**
@@ -52,7 +54,7 @@ public class Region {
    *
    * @return the minimum value of the region in x-axis.
    */
-  public float getMinX() {
+  public double getMinX() {
     return minX;
   }
 
@@ -61,7 +63,7 @@ public class Region {
    *
    * @param minX a minimum value of the region in x-axis.
    */
-  public void setMinX(float minX) {
+  public void setMinX(double minX) {
     this.minX = minX;
   }
 
@@ -70,7 +72,7 @@ public class Region {
    *
    * @return the maximum value of the region in x-axis.
    */
-  public float getMaxX() {
+  public double getMaxX() {
     return maxX;
   }
 
@@ -79,7 +81,7 @@ public class Region {
    *
    * @param maxX a minimum value of the region in x-axis.
    */
-  public void setMaxX(float maxX) {
+  public void setMaxX(double maxX) {
     this.maxX = maxX;
   }
 
@@ -88,7 +90,7 @@ public class Region {
    *
    * @return the minimum value of the region in y-axis.
    */
-  public float getMinY() {
+  public double getMinY() {
     return minY;
   }
 
@@ -97,7 +99,7 @@ public class Region {
    *
    * @param minY a minimum value of the region in y-axis.
    */
-  public void setMinY(float minY) {
+  public void setMinY(double minY) {
     this.minY = minY;
   }
 
@@ -106,7 +108,7 @@ public class Region {
    *
    * @return the maximum value of the region in y-axis.
    */
-  public float getMaxY() {
+  public double getMaxY() {
     return maxY;
   }
 
@@ -115,7 +117,7 @@ public class Region {
    *
    * @param maxY a maximum value of the region in y-axis.
    */
-  public void setMaxY(float maxY) {
+  public void setMaxY(double maxY) {
     this.maxY = maxY;
   }
 
@@ -123,37 +125,35 @@ public class Region {
    * Do linear transformation on destination region.
    *
    * @param dst destination region
-   * @param stroke stroke to transform
+   * @param curve Bezier curve to transform
    * @return new stroke on destination region
    */
-  public Stroke transformStroke(Region dst, Stroke stroke) {
-    Stroke transformed = stroke.copy();
-    transformed.setStartPoint(transformPoint2D(dst, stroke.getStartPoint()));
-    transformed.setEndPoint(transformPoint2D(dst, stroke.getEndPoint()));
-    transformed.setControlPoints(new ArrayList<Point2D>());
-    for (Point2D controlPoint : stroke.getControlPoints()) {
-      transformed.addControlPoint(transformPoint2D(dst, controlPoint));
+  public BezierCurve transformBezierCurve(Region dst, BezierCurve curve) {
+    Vector2D[] transformedPoints = new Vector2D[curve.getPoints().length];
+    for (int i = 0; i < transformedPoints.length; i++) {
+      transformedPoints[i] = (transformVector2D(dst, curve.getPoint(i)));
     }
-
-    return transformed;
+    BezierCurve transformedCurve = new BezierCurve(transformedPoints);
+    transformedCurve.setJoint(curve.isJoint());
+    return transformedCurve;
   }
 
   /**
-   * De linear transformation on destination region.
+   * Do linear transformation on destination region.
    *
    * @param dst destination region
    * @param point point to transform
    * @return new point on destination region
    */
-  public Point2D transformPoint2D(Region dst, Point2D point) {
-    Point2D baseMinPoint = getMinPoint();
-    Point2D baseDiffPoint = getMaxPoint().sub(baseMinPoint);
-    Point2D targetMinPoint = dst.getMinPoint();
-    Point2D targetDiffPoint = dst.getMaxPoint().sub(targetMinPoint);
+  public Vector2D transformVector2D(Region dst, Vector2D point) {
+    Vector2D baseMinPoint = getMinPoint();
+    Vector2D baseVector = getMaxPoint().subtract(baseMinPoint);
+    Vector2D targetMinPoint = dst.getMinPoint();
+    Vector2D targetVector = dst.getMaxPoint().subtract(targetMinPoint);
 
-    return point.sub(baseMinPoint)
-        .scaleX(targetDiffPoint.getX() / baseDiffPoint.getX())
-        .scaleY(targetDiffPoint.getY() / baseDiffPoint.getY())
+    Vector2D diffVector = point.subtract(baseMinPoint);
+    return new Vector2D(diffVector.getX() * targetVector.getX() / baseVector.getX(),
+        diffVector.getY() * targetVector.getY() / baseVector.getY())
         .add(targetMinPoint);
   }
 

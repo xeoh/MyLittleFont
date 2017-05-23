@@ -8,10 +8,11 @@ import android.graphics.Path;
 import android.util.AttributeSet;
 import android.view.View;
 
-import kr.ac.kaist.team888.core.Point2D;
-import kr.ac.kaist.team888.core.Region;
 import kr.ac.kaist.team888.locator.Locator;
+import kr.ac.kaist.team888.region.Region;
 import kr.ac.kaist.team888.util.FeatureController;
+
+import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
 public class FontCanvasView extends View implements FeatureController.OnFeatureChangeListener {
   private static final float CANVAS_OFFSET_RATIO = 0.05f;
@@ -112,14 +113,15 @@ public class FontCanvasView extends View implements FeatureController.OnFeatureC
         canvas.drawPath(path, skeletonPaint);
       }
 
-      for (Point2D control : locator.getControlCircles()) {
-        canvas.drawCircle(control.getX(), control.getY(), CONTROL_POINT_RADIUS, controlPaint);
+      for (Vector2D fixed : locator.getFixedCircles()) {
+        canvas.drawCircle((float) fixed.getX(), (float) fixed.getY(),
+            FIXED_POINT_RADIUS, fixedPaint);
       }
 
-      for (Point2D fixed : locator.getFixedCircles()) {
-        canvas.drawCircle(fixed.getX(), fixed.getY(), FIXED_POINT_RADIUS, fixedPaint);
+      for (Vector2D control : locator.getControlCircles()) {
+        canvas.drawCircle((float) control.getX(), (float) control.getY(),
+            CONTROL_POINT_RADIUS, controlPaint);
       }
-
     } else {
       for (Path path : locator.getContourPaths()) {
         canvas.drawPath(path, contourPaint);
