@@ -40,12 +40,13 @@ public class FontMakerFragment extends Fragment {
       }
     });
 
+    // Feature - curve
     SeekBar curveControl = (SeekBar) view.getRootView().findViewById(R.id.curveControl);
     curveControl.setProgress(0);
     curveControl.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
       @Override
       public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-        FeatureController.getInstance().setCurve(progress / 100f);
+        FeatureController.getInstance().setCurve(progress / 100.0);
       }
 
       @Override
@@ -54,5 +55,22 @@ public class FontMakerFragment extends Fragment {
       @Override
       public void onStopTrackingTouch(SeekBar seekBar) { }
     });
+
+    // Feature - weight
+    SeekBar weightControl = (SeekBar) view.getRootView().findViewById(R.id.weightControl);
+    weightControl.setProgress(50);
+    weightControl.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+      @Override
+      public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+        FeatureController.getInstance().setWeight(progress / 100.0);
+      }
+
+      @Override
+      public void onStartTrackingTouch(SeekBar seekBar) { }
+
+      @Override
+      public void onStopTrackingTouch(SeekBar seekBar) { }
+    });
+
   }
 }
