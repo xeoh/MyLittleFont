@@ -20,6 +20,7 @@ public class FeatureController {
   };
 
   private double curve = 0;
+  private double roundness = 0;
   private double weight = .5;
 
   /**
@@ -99,6 +100,25 @@ public class FeatureController {
    */
   public void setCurve(double curve) {
     this.curve = curve;
+    onFeatureChange();
+  }
+
+  /**
+   * Getter roundness value.
+   *
+   * @return roundness value
+   */
+  public double getRoundness() {
+    return roundness;
+  }
+
+  /**
+   * Setter of roundness value.
+   *
+   * @param roundness roundness value
+   */
+  public void setRoundness(double roundness) {
+    this.roundness = roundness;
     onFeatureChange();
   }
 
