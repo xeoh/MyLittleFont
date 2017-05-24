@@ -216,11 +216,10 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
     for (ArrayList<BezierCurve> curves : skeletons) {
       ArrayList<BezierCurve> newCurves = new ArrayList<>();
       for (BezierCurve curve : curves) {
-        if (curve.getOrder() <= 2
-            && curve.getPoint(0).equals(curve.getPoint(curve.getOrder()))) {
+        if (curve.isCollapsed()) {
           continue;
         }
-        newCurves.add(curve.clone());
+        newCurves.add(curve);
       }
       double delta = WEIGHT_DEFAULT
           + (WEIGHT_DEFAULT - 1) * (FeatureController.getInstance().getWeight() - .5);
