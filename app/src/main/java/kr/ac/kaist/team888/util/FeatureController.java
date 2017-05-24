@@ -19,7 +19,8 @@ public class FeatureController {
     }
   };
 
-  private float curve = 0.0f;
+  private double curve = 0;
+  private double weight = .5;
 
   /**
    * Interface for listening change of hangul features.
@@ -87,7 +88,7 @@ public class FeatureController {
    *
    * @return curve value
    */
-  public float getCurve() {
+  public double getCurve() {
     return curve;
   }
 
@@ -96,8 +97,27 @@ public class FeatureController {
    *
    * @param curve curve value
    */
-  public void setCurve(float curve) {
+  public void setCurve(double curve) {
     this.curve = curve;
+    onFeatureChange();
+  }
+
+  /**
+   * Getter weight value.
+   *
+   * @return weight value
+   */
+  public double getWeight() {
+    return weight;
+  }
+
+  /**
+   * Setter of weight value.
+   *
+   * @param weight weight value
+   */
+  public void setWeight(double weight) {
+    this.weight = weight;
     onFeatureChange();
   }
 }

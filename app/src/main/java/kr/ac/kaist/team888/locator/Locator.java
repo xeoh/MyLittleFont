@@ -30,6 +30,7 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
   public static final Region ORIGIN_REGION = HangulCharacter.ORIGIN_REGION;
 
   private static final int CURVE_MAX = 60;
+  private static final int WEIGHT_DEFAULT = 32;
   private static final int PRIORITY = 1;
 
   private ArrayList<Region> regions;
@@ -221,7 +222,9 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
         }
         newCurves.add(curve.clone());
       }
-      contours.add(BezierCurveUtils.stroke(newCurves, 30));
+      double delta = WEIGHT_DEFAULT
+          + (WEIGHT_DEFAULT - 1) * (FeatureController.getInstance().getWeight() - .5);
+      contours.add(BezierCurveUtils.stroke(newCurves, delta));
     }
   }
 
