@@ -237,6 +237,10 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
           (float) transInitial.getStartPoint().getY());
 
       for (BezierCurve curve : curves) {
+        if (curve.isCollapsed()) {
+          continue;
+        }
+
         BezierCurve transCurve = ORIGIN_REGION.transformBezierCurve(canvasRegion, curve);
         if (showPoints) {
           fixedCircles.add(transCurve.getStartPoint());
