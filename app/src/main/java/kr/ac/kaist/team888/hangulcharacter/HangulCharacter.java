@@ -2,12 +2,10 @@ package kr.ac.kaist.team888.hangulcharacter;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
 
 import kr.ac.kaist.team888.bezier.BezierCurve;
@@ -22,7 +20,6 @@ import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 
 /**
  * Abstract Class for each individual Hangul characters.
@@ -54,25 +51,66 @@ public abstract class HangulCharacter implements FeatureController.OnFeatureChan
       return;
     }
 
-    Type collectionType = new TypeToken<Collection<Collection<BezierCurve>>>(){}.getType();
-    GsonBuilder gsonBuilder = new GsonBuilder();
-    gsonBuilder.registerTypeAdapter(BezierCurve.class, new JsonDeserializer<BezierCurve>() {
+    // Parse points data from Json file
+    Type collectionType = new TypeToken<Collection<Collection<Collection<Vector2D>>>>(){}.getType();
+    GsonBuilder gson = new GsonBuilder();
+    gson.registerTypeAdapter(new TypeToken<Collection<Vector2D>>(){}.getType(),
+        new JsonDeserializer<Collection<Vector2D>>() {
       @Override
-      public BezierCurve deserialize(JsonElement json, Type typeOfT,
-                                     JsonDeserializationContext context) throws JsonParseException {
-        JsonArray jsonPoints = json.getAsJsonObject().getAsJsonArray("points");
-        Gson gson = new Gson();
-        Vector2D[] points = new Vector2D[jsonPoints.size()];
-        for (int i = 0; i < points.length; i++) {
-          points[i] = gson.fromJson(jsonPoints.get(i), Vector2D.class);
-        }
-        return new BezierCurve(points);
+      public Collection<Vector2D> deserialize(JsonElement json, Type typeOfT,
+                                              JsonDeserializationContext context) {
+        return new Gson().fromJson(json.getAsJsonObject().getAsJsonArray("points"),
+            new TypeToken<Collection<Vector2D>>(){}.getType());
       }
     });
-
-    skeletonsData = gsonBuilder.create()
+    ArrayList<ArrayList<ArrayList<Vector2D>>> skeletonsPoints = gson.create()
         .fromJson(data.getAsJsonArray(SKELETONS_KEY), collectionType);
-    addJointStroke();
+
+    // Construct skeletons data including generating joints
+    skeletonsData = new ArrayList<>();
+    for (int i = 0; i < skeletonsPoints.size(); i++) {
+      skeletonsData.add(i, new ArrayList<BezierCurve>());
+      for (int j = 0; j < skeletonsPoints.get(i).size(); j++) {
+        ArrayList<Vector2D> points = skeletonsPoints.get(i).get(j);
+        // Valid points size
+        if (points.size() <= 1) {
+          continue;
+        }
+        // Append a single line or curve
+        if (points.size() <= 3) {
+          skeletonsData.get(i).add(new BezierCurve(points.toArray(new Vector2D[points.size()])));
+        } else {
+          // Append sequence of quadratic curves
+          skeletonsData.get(i).add(new BezierCurve(new Vector2D[] {
+              points.get(0), points.get(1), points.get(1).add(points.get(2)).scalarMultiply(.5)
+          }));
+          for (int k = 2; k < points.size() - 2; k++) {
+            skeletonsData.get(i).add(new BezierCurve(new Vector2D[] {
+                points.get(k).add(points.get(k - 1)).scalarMultiply(.5),
+                points.get(k),
+                points.get(k).add(points.get(k + 1)).scalarMultiply(.5)
+            }));
+          }
+          skeletonsData.get(i).add(new BezierCurve(new Vector2D[] {
+              points.get(points.size() - 2).add(points.get(points.size() - 3)).scalarMultiply(.5),
+              points.get(points.size() - 2),
+              points.get(points.size() - 1)
+          }));
+        }
+        // Append joint
+        Vector2D endPoint = points.get(points.size() - 1);
+        Vector2D nextStartPoint = j == skeletonsPoints.get(i).size() - 1
+            ? skeletonsPoints.get(i).get(0).get(0)
+            : skeletonsPoints.get(i).get(j + 1).get(0);
+        if (endPoint.equals(nextStartPoint)) {
+          BezierCurve joint = new BezierCurve(new Vector2D[] {endPoint, endPoint, endPoint});
+          joint.setJoint(true);
+          skeletonsData.get(i).add(joint);
+        }
+      }
+    }
+
+    // Copy skeletons data
     skeletons = new ArrayList<>();
     for (int i = 0; i < skeletonsData.size(); i++) {
       skeletons.add(i, new ArrayList<BezierCurve>());
@@ -80,32 +118,10 @@ public abstract class HangulCharacter implements FeatureController.OnFeatureChan
         skeletons.get(i).add(skeletonsData.get(i).get(j).clone());
       }
     }
+
     region = calculateRegion();
 
     FeatureController.getInstance().registerOnFeatureChangeListener(this);
-  }
-
-  private void addJointStroke() {
-    for (ArrayList<BezierCurve> skeleton : skeletonsData) {
-      HashMap<BezierCurve, BezierCurve> joints = new HashMap<>();
-      for (int i = 0; i < skeleton.size(); i++) {
-        BezierCurve nextCurve = (i == skeleton.size() - 1) ? skeleton.get(0) : skeleton.get(i + 1);
-
-        if (skeleton.get(i).getEndPoint().equals(nextCurve.getStartPoint())) {
-          BezierCurve jointCurve = new BezierCurve(new Vector2D[] {
-              skeleton.get(i).getEndPoint(),
-              skeleton.get(i).getEndPoint(),
-              skeleton.get(i).getEndPoint()
-          });
-          jointCurve.setJoint(true);
-          joints.put(skeleton.get(i), jointCurve);
-        }
-      }
-
-      for (BezierCurve pos : joints.keySet()) {
-        skeleton.add(skeleton.indexOf(pos) + 1, joints.get(pos));
-      }
-    }
   }
 
   private Region calculateRegion() {
