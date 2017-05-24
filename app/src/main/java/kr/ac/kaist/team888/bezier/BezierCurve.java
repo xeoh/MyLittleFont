@@ -289,6 +289,20 @@ public class BezierCurve extends ParametricPolynomialCurve {
   }
 
   /**
+   * Returns whether every points are collapsed or not.
+   *
+   * @return true if every points are collapsed, false otherwise
+   */
+  public boolean isCollapsed() {
+    for (Vector2D point : points) {
+      if (!points[0].equals(point)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
    * Returns an offset Bezier curve of the original Bezier curve by given distance
    * with using given offset method.
    *
