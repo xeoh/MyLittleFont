@@ -1,7 +1,7 @@
 package kr.ac.kaist.team888.hangulcharacter;
 
-public class Woe extends HangulCharacter {
-  protected Woe() {
+public class Weo extends HangulCharacter {
+  protected Weo() {
     super();
   }
 }

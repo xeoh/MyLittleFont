@@ -6,6 +6,25 @@ package kr.ac.kaist.team888.hangulcharacter;
  * <p> Represent all hangul character defined in UNICODE.
  */
 public enum Hangul {
+  SIN_GIYEOK    ("Giyeok",        0x3131),  // ㄱ
+  SIN_SS_GIYEOK ("SsangGiyeok",   0x3132),  // ㄲ
+  SIN_NIEUN     ("Nieum",         0x3134),  // ㄴ
+  SIN_DIGEUT    ("Digeut",        0x3137),  // ㄷ
+  SIN_SS_DIGEUT ("SsangDigeut",   0x3138),  // ㄸ
+  SIN_RIEUL     ("Rieul",         0x3139),  // ㄹ
+  SIN_MIEUM     ("Mieum",         0x3141),  // ㅁ
+  SIN_BIEUP     ("Bieup",         0x3142),  // ㅂ
+  SIN_SS_BIEUP  ("SsangBieup",    0x3143),  // ㅃ
+  SIN_SIOT      ("Siot",          0x3145),  // ㅅ
+  SIN_SS_SIOT   ("SsangSiot",     0x3146),  // ㅆ
+  SIN_IEUNG     ("Ieung",         0x3147),  // ㅇ
+  SIN_JIEUT     ("Jieut",         0x3148),  // ㅈ
+  SIN_SS_JIEUT  ("SsangJieut",    0x3149),  // ㅉ
+  SIN_CHIEUT    ("Chieut",        0x314A),  // ㅊ
+  SIN_KIEUK     ("Kieuk",         0x314B),  // ㅋ
+  SIN_TIEUT     ("Tieut",         0x314C),  // ㅌ
+  SIN_PIEUP     ("Pieup",         0x314D),  // ㅍ
+  SIN_HIEUT     ("Hieut",         0x314E),  // ㅎ
   INIT_GIYEOK    ("Giyeok",       0x1100),  // ㄱ
   INIT_SS_GIYEOK ("SsangGiyeok",  0x1101),  // ㄲ
   INIT_NIEUN     ("Nieum",        0x1102),  // ㄴ
@@ -34,15 +53,15 @@ public enum Hangul {
   MEDI_YEO       ("Yeo", 0x1167),           // ㅕ
   MEDI_YE        ("Ye",  0x1168),           // ㅖ
   MEDI_OH        ("Oh",  0x1169),           // ㅗ
-  MEDI_YU        ("Yu",  0x116A),           // ㅠ
-  MEDI_WA        ("Wa",  0x116B),           // ㅘ
-  MEDI_YO        ("Yo",  0x116C),           // ㅛ
-  MEDI_WAE       ("Wae", 0x116D),           // ㅙ
-  MEDI_OE        ("Oe",  0x116E),           // ㅚ
-  MEDI_UH        ("Uh",  0x116F),           // ㅜ
-  MEDI_WOE       ("Weo", 0x1170),           // ㅝ
-  MEDI_WE        ("We",  0x1171),           // ㅞ
-  MEDI_WI        ("Wi",  0x1172),           // ㅟ
+  MEDI_WA        ("Wa",  0x116A),           // ㅘ
+  MEDI_WAE       ("Wae", 0x116B),           // ㅙ
+  MEDI_OE        ("Oe",  0x116C),           // ㅚ
+  MEDI_YO        ("Yo",  0x116D),           // ㅛ
+  MEDI_UH        ("Uh",  0x116E),           // ㅜ
+  MEDI_WEO       ("Weo", 0x116F),           // ㅝ
+  MEDI_WE        ("We",  0x1170),           // ㅞ
+  MEDI_WI        ("Wi",  0x1171),           // ㅟ
+  MEDI_YU        ("Yu",  0x1172),           // ㅠ
   MEDI_EU        ("Eu",  0x1173),           // ㅡ
   MEDI_YI        ("Yi",  0x1174),           // ㅢ
   MEDI_IH        ("Ih",  0x1175),           // ㅣ
@@ -75,10 +94,12 @@ public enum Hangul {
   FIN_HIEUT         ("Hieut",       0x11C2),// ㅎ
   NONE              ("None", -1);
 
+  private static final int SINGLE_COUNT = 19;
   private static final int INITIAL_COUNT = 19;
   private static final int MEDIAL_COUNT = 21;
-  private static final int FINAL_COUNT = 28;
 
+  private static final int SINGLE_UNICODE_BEGIN = 0x3131;
+  private static final int SINGLE_UNICODE_END = 0x314E;
   private static final int INITIAL_UNICODE_BEGIN = 0x1100;
   private static final int INITIAL_UNICODE_END = 0x1112;
   private static final int MEDIAL_UNICODE_BEGIN = 0x1161;
@@ -101,15 +122,35 @@ public enum Hangul {
    * @return Correspond {@link Hangul} value
    */
   public static Hangul fromInt(int value) {
-    if (INITIAL_UNICODE_BEGIN <= value && value <= INITIAL_UNICODE_END) {
-      return Hangul.values()[value - INITIAL_UNICODE_BEGIN];
+    for (Hangul hangul : values()) {
+      if (hangul.getValue() == value) {
+        return hangul;
+      }
+    }
+
+    int index;
+    int offset;
+    if (SINGLE_UNICODE_BEGIN <= value && value <= SINGLE_UNICODE_END) {
+      for (Hangul hangul : values()) {
+        if (hangul.getValue() == value) {
+          return hangul;
+        }
+      }
+      return NONE;
+    } else if (INITIAL_UNICODE_BEGIN <= value && value <= INITIAL_UNICODE_END) {
+      index = INITIAL_UNICODE_END - value;
+      offset = SINGLE_COUNT;
     } else if (MEDIAL_UNICODE_BEGIN <= value && value <= MEDIAL_UNICODE_END) {
-      return Hangul.values()[value - MEDIAL_UNICODE_BEGIN + INITIAL_COUNT];
+      index = MEDIAL_UNICODE_END - value;
+      offset = SINGLE_COUNT + INITIAL_COUNT;
     } else if (FINAL_UNICODE_BEGIN <= value && value <= FINAL_UNICODE_END) {
-      return Hangul.values()[value - FINAL_UNICODE_BEGIN + INITIAL_COUNT + MEDIAL_COUNT];
+      index = FINAL_UNICODE_END - value;
+      offset = SINGLE_COUNT + INITIAL_COUNT + MEDIAL_COUNT;
     } else {
       return NONE;
     }
+
+    return values()[index + offset];
   }
 
   @Override
