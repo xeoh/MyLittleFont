@@ -22,8 +22,6 @@ public class BezierCurve extends ParametricPolynomialCurve {
   private int order;
   private BezierCurveOffsetMethodType offsetMethod;
 
-  private boolean isJoint = false;
-
   /**
    * Creates a new Bezier curve with given controlling points and sets a default offset method.
    *
@@ -271,24 +269,6 @@ public class BezierCurve extends ParametricPolynomialCurve {
   }
 
   /**
-   * Returns true if it is a joint, false otherwise.
-   *
-   * @return whether is joint or not
-   */
-  public boolean isJoint() {
-    return isJoint;
-  }
-
-  /**
-   * Sets a joint.
-   *
-   * @param joint true if joint, false if not
-   */
-  public void setJoint(boolean joint) {
-    isJoint = joint;
-  }
-
-  /**
    * Returns whether every points are collapsed or not.
    *
    * @return true if every points are collapsed, false otherwise
@@ -300,6 +280,35 @@ public class BezierCurve extends ParametricPolynomialCurve {
       }
     }
     return true;
+  }
+
+  /**
+   * Split the Bezier curve into two Bezier curves of same order respective to given time.
+   *
+   * <p>This is calculated by the
+   * <a href="https://en.wikipedia.org/wiki/De_Casteljau's_algorithm">De Casteljau's algorithm</a>.
+   *
+   * @param time a time at which be split
+   * @return Two split Bezier curves, 0 to time is at index 0, time to 1 is at index 1
+   */
+  public BezierCurve[] split(double time) {
+    Vector2D[][] beta = new Vector2D[order + 1][];
+    beta[0] = new Vector2D[order + 1];
+    for (int j = 0; j <= order; j++) {
+      beta[0][j] = points[j];
+    }
+    for (int i = 1; i <= order; i++) {
+      beta[i] = new Vector2D[order - i + 1];
+      for (int j = 0; j <= order - i; j++) {
+        beta[i][j] = new Vector2D(1 - time, beta[i - 1][j], time, beta[i - 1][j + 1]);
+      }
+    }
+    Vector2D[][] points = new Vector2D[2][order + 1];
+    for (int i = 0; i <= order; i++) {
+      points[0][i] = beta[i][0];
+      points[1][i] = beta[order - i][i];
+    }
+    return new BezierCurve[] {new BezierCurve(points[0]), new BezierCurve(points[1])};
   }
 
   /**
@@ -353,7 +362,6 @@ public class BezierCurve extends ParametricPolynomialCurve {
   @Override
   public BezierCurve clone() {
     BezierCurve curve = new BezierCurve(points, offsetMethod);
-    curve.setJoint(isJoint);
     return curve;
   }
 
