@@ -13,12 +13,12 @@ class OffsetTillerHanson {
    * Returns a offset of the given Bezier curve as the form of a Bezier curve
    *     by using the Tiller-Hanson algorithm.
    *
-   * @param bezierCurve a Bezier curve to append offsetting
+   * @param curve a Bezier curve to append offsetting
    * @param delta offset distance
    * @return a offset Bezier curve
    */
-  protected static BezierCurve offset(BezierCurve bezierCurve, double delta) {
-    Vector2D[] points = bezierCurve.getPoints();
+  protected static BezierCurve offset(BezierCurve curve, double delta) {
+    Vector2D[] points = curve.getPoints();
     ArrayList<Vector2D> offsetPoints = new ArrayList<>();
     Vector2D prevPoint;
     Vector2D nextPoint;
@@ -35,25 +35,25 @@ class OffsetTillerHanson {
    * Returns a contour of the given sequence of the Bezier curves
    *     as the form of a sequence of Bezier curves by using the Tiller-Hanson algorithm.
    *
-   * @param bezierCurves a sequence of Bezier curves to append stroking
+   * @param curves a sequence of Bezier curves to append stroking
    * @param delta offset distance
    * @return a contour sequence
    */
-  protected static ArrayList<BezierCurve> stroke(ArrayList<BezierCurve> bezierCurves,
+  protected static ArrayList<BezierCurve> stroke(ArrayList<BezierCurve> curves,
                                                  double delta, double roundness) {
     ArrayList<BezierCurve> contourUpper = new ArrayList<>();
     ArrayList<BezierCurve> contourLower = new ArrayList<>();
-    for (BezierCurve bezierCurve : bezierCurves) {
-      contourUpper.add(offset(bezierCurve, delta));
-      contourLower.add(offset(bezierCurve, -delta).reverse());
+    for (BezierCurve curve : curves) {
+      contourUpper.add(offset(curve, delta));
+      contourLower.add(offset(curve, -delta).reverse());
     }
     Collections.reverse(contourLower);
 
     ArrayList<BezierCurve> contour = new ArrayList<>();
 
     // Store special curves and points
-    BezierCurve firstBaseCurve = bezierCurves.get(0);
-    BezierCurve lastBaseCurve = bezierCurves.get(bezierCurves.size() - 1);
+    BezierCurve firstBaseCurve = curves.get(0);
+    BezierCurve lastBaseCurve = curves.get(curves.size() - 1);
     Vector2D firstBasePoint = firstBaseCurve.getPoint(0);
     Vector2D firstNextPoint = firstBaseCurve.getPoint(1);
     Vector2D lastBasePoint = lastBaseCurve.getPoint(lastBaseCurve.getOrder());
@@ -64,7 +64,7 @@ class OffsetTillerHanson {
         .equals(lastBaseCurve.getPoint(lastBaseCurve.getOrder()));
 
     // Upper contour filling
-    fillHalfContour(contourUpper, bezierCurves, contour, delta);
+    fillHalfContour(contourUpper, curves, contour, delta);
 
     // Connect upper to lower
     if (isClosed) {
@@ -76,8 +76,8 @@ class OffsetTillerHanson {
 
     // Lower contour filling
     ArrayList<BezierCurve> reverseBezierCurves = new ArrayList<>();
-    for (BezierCurve bezierCurve : bezierCurves) {
-      reverseBezierCurves.add(bezierCurve.reverse());
+    for (BezierCurve curve : curves) {
+      reverseBezierCurves.add(curve.reverse());
     }
     Collections.reverse(reverseBezierCurves);
     fillHalfContour(contourLower, reverseBezierCurves, contour, delta);

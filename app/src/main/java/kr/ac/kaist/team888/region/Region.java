@@ -134,7 +134,6 @@ public class Region {
       transformedPoints[i] = (transformVector2D(dst, curve.getPoint(i)));
     }
     BezierCurve transformedCurve = new BezierCurve(transformedPoints);
-    transformedCurve.setJoint(curve.isJoint());
     return transformedCurve;
   }
 

@@ -29,13 +29,15 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
   private static final String TYPE_TOKEN = "type%d";
   public static final Region ORIGIN_REGION = HangulCharacter.ORIGIN_REGION;
 
-  private static final int CURVE_MAX = 60;
+  private static final int CURVE_MAX = 70;
+  private static final int CURVE_GAP = 2;
+  private static final double CURVE_TOLERANCE = 1E-4;
   private static final int WEIGHT_DEFAULT = 32;
   private static final int PRIORITY = 1;
 
   private ArrayList<Region> regions;
   private ArrayList<HangulCharacter> characters;
-  private ArrayList<ArrayList<BezierCurve>> skeletonsData;
+  private ArrayList<ArrayList<ArrayList<BezierCurve>>> skeletonsData;
   private ArrayList<ArrayList<BezierCurve>> skeletons;
   private ArrayList<ArrayList<BezierCurve>> contours;
 
@@ -65,24 +67,23 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
 
   private void initialize() {
     skeletonsData = new ArrayList<>();
-    skeletons = new ArrayList<>();
 
     for (int i = 0; i < characters.size(); i++) {
       HangulCharacter character = characters.get(i);
       Region baseRegion = character.getRegion();
       Region targetRegion = regions.get(i);
 
-      for (ArrayList<BezierCurve> skeleton : character.getSkeletons()) {
-
-        ArrayList<BezierCurve> newSkeletonData = new ArrayList<>();
-        ArrayList<BezierCurve> newSkeleton = new ArrayList<>();
-        for (BezierCurve curve : skeleton) {
-          BezierCurve transformedCurve = baseRegion.transformBezierCurve(targetRegion, curve);
-          newSkeletonData.add(transformedCurve);
-          newSkeleton.add(transformedCurve.clone());
+      for (ArrayList<ArrayList<BezierCurve>> skeleton : character.getSkeletons()) {
+        ArrayList<ArrayList<BezierCurve>> newSkeletonData = new ArrayList<>();
+        for (ArrayList<BezierCurve> segment : skeleton) {
+          ArrayList<BezierCurve> newSegment = new ArrayList<>();
+          for (BezierCurve curve : segment) {
+            BezierCurve transformedCurve = baseRegion.transformBezierCurve(targetRegion, curve);
+            newSegment.add(transformedCurve);
+          }
+          newSkeletonData.add(newSegment);
         }
         skeletonsData.add(newSkeletonData);
-        skeletons.add(newSkeleton);
       }
     }
 
@@ -176,38 +177,158 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
     return controlCircles;
   }
 
+  private double getTimeByLength(BezierCurve[] curves, double offset, boolean order) {
+    double min = 0;
+    double max = curves.length;
+    double time;
+    for (;;) {
+      double length = order
+          ? BezierCurveUtils.getLength(curves, 0, (min + max) / 2)
+          : BezierCurveUtils.getLength(curves, (min + max) / 2, curves.length);
+      if (Math.abs(length - offset) < CURVE_TOLERANCE) {
+        time = (min + max) / 2;
+        break;
+      }
+      if (order ^ (length < offset)) {
+        max = (min + max) / 2;
+      } else {
+        min = (min + max) / 2;
+      }
+    }
+    return time;
+  }
+
+  private BezierCurve adjustJoint(BezierCurve joint, BezierCurve leftCurve,
+                                  BezierCurve rightCurve) {
+    Vector2D startVector = joint.getStartPoint()
+        .subtract(leftCurve.getPoint(leftCurve.getOrder() - 1));
+    Vector2D endVector = rightCurve.getPoint(1).subtract(joint.getEndPoint());
+    double cross = startVector.getX() * endVector.getY() - startVector.getY() * endVector.getX();
+    if (Math.abs(cross) < CURVE_TOLERANCE) {
+      if (Math.abs(joint.getEndPoint().subtract(joint.getStartPoint()).normalize()
+          .dotProduct(endVector.normalize()) - 1) < CURVE_TOLERANCE) {
+        return new BezierCurve(new Vector2D[] {
+            joint.getStartPoint(),
+            joint.getEndPoint()
+        });
+      }
+      double offset = FeatureController.getInstance().getCurve() * CURVE_MAX;
+      return new BezierCurve(new Vector2D[] {
+          joint.getStartPoint(),
+          joint.getStartPoint().add(offset, startVector.normalize()),
+          joint.getEndPoint().add(offset, startVector.normalize()),
+          joint.getEndPoint()
+      });
+    }
+    double factor = (-joint.getStartPoint().getX() * endVector.getY()
+        + joint.getStartPoint().getY() * endVector.getX()
+        + joint.getEndPoint().getX() * endVector.getY()
+        - joint.getEndPoint().getY() * endVector.getX()) / cross;
+    return new BezierCurve(new Vector2D[] {
+        joint.getStartPoint(),
+        joint.getStartPoint().add(factor, startVector),
+        joint.getEndPoint()
+    });
+  }
+
   private void applyCurve() {
-    for (int i = 0 ; i < skeletons.size(); i++) {
-      ArrayList<BezierCurve> skeletonData = skeletonsData.get(i);
-      ArrayList<BezierCurve> skeleton = skeletons.get(i);
-      for (int j = 0; j < skeletons.get(i).size(); j++) {
-        BezierCurve joint = skeletons.get(i).get(j);
-        if (joint.isJoint()) {
-          BezierCurve leftStroke = j != 0
-              ? skeleton.get(j - 1) : skeleton.get(skeleton.size() - 1);
-          BezierCurve leftStrokeData = j != 0
-              ? skeletonData.get(j - 1) : skeletonData.get(skeletonData.size() - 1);
-          BezierCurve rightStroke = j != skeleton.size() - 1
-              ? skeleton.get(j + 1) : skeleton.get(0);
-          BezierCurve rightStrokeData = j != skeletonData.size() - 1
-              ? skeletonData.get(j + 1) : skeletonData.get(0);
+    double offset = FeatureController.getInstance().getCurve() * CURVE_MAX;
+    skeletons = new ArrayList<>();
+    // Omit creating joints and appending curve if offset is just 0
+    if (offset == 0) {
+      for (ArrayList<ArrayList<BezierCurve>> segments : skeletonsData) {
+        ArrayList<BezierCurve> skeleton = new ArrayList<BezierCurve>();
+        for (ArrayList<BezierCurve> segment : segments) {
+          for (BezierCurve curve : segment) {
+            skeleton.add(curve.clone());
+          }
+        }
+        skeletons.add(skeleton);
+      }
+      return;
+    }
 
-          Vector2D leftVector = leftStrokeData.getStartPoint()
-              .subtract(leftStrokeData.getEndPoint());
-          Vector2D rightVector = rightStrokeData.getEndPoint()
-              .subtract(rightStrokeData.getStartPoint());
+    for (ArrayList<ArrayList<BezierCurve>> segments : skeletonsData) {
+      ArrayList<BezierCurve> skeleton = new ArrayList<>();
+      for (int i = 0; i < segments.size(); i++) {
+        // Clone the segment data
+        ArrayList<BezierCurve> segmentData = segments.get(i);
+        ArrayList<BezierCurve> segment = new ArrayList<>();
+        for (BezierCurve curve : segmentData) {
+          segment.add(curve.clone());
+        }
 
-          double scale = FeatureController.getInstance().getCurve() * CURVE_MAX;
-          leftStroke.setEndPoint(leftStrokeData
-              .getEndPoint().add(leftVector.scalarMultiply(scale / leftVector.getNorm())));
-          joint.setStartPoint(leftStrokeData
-              .getEndPoint().add(leftVector.scalarMultiply(scale / leftVector.getNorm())));
-          rightStroke.setStartPoint(rightStrokeData
-              .getStartPoint().add(rightVector.scalarMultiply(scale / rightVector.getNorm())));
-          joint.setEndPoint(rightStrokeData
-              .getStartPoint().add(rightVector.scalarMultiply(scale / rightVector.getNorm())));
+        // Fetch joints information
+        ArrayList<BezierCurve> leftSegment = segments.get(i == 0 ? segments.size() - 1 : i - 1);
+        ArrayList<BezierCurve> rightSegment = segments.get(i == segments.size() - 1 ? 0 : i + 1);
+        boolean jointLeft = segment.get(0).getStartPoint()
+            .equals(leftSegment.get(leftSegment.size() - 1).getEndPoint());
+        boolean jointRight = segment.get(segment.size() - 1).getEndPoint()
+            .equals(rightSegment.get(0).getStartPoint());
+
+        // Add curves of segment if both joints are not needed
+        if (!jointLeft && !jointRight) {
+          for (BezierCurve curve : segment) {
+            skeleton.add(curve);
+          }
+          continue;
+        }
+
+        // Get length of the current segment
+        BezierCurve[] segmentArr = segmentData.toArray(new BezierCurve[segmentData.size()]);
+        double length = BezierCurveUtils.getLength(segmentArr, 0, segmentArr.length);
+        double targetOffset = Math.min(offset,
+            (length - CURVE_GAP) / ((jointLeft && jointRight) ? 2 : 1));
+        // Set a left joint of the current segment
+        if (jointLeft) {
+          double time = getTimeByLength(segmentArr, targetOffset, true);
+          int index = (int) Math.min(segmentArr.length - 1, Math.floor(time));
+          for (int j = 0; j < index; j++) {
+            segment.remove(0);
+          }
+          segment.set(0, segment.get(0).split(time - index)[1]);
+
+          // Update left joint made by the left segment
+          if (i > 0) {
+            BezierCurve leftCurve = skeleton.get(skeleton.size() - 2);
+            BezierCurve joint = skeleton.get(skeleton.size() - 1);
+            BezierCurve rightCurve = segment.get(0);
+            joint.setEndPoint(rightCurve.getStartPoint());
+            skeleton.set(skeleton.size() - 1, adjustJoint(joint, leftCurve, rightCurve));
+          }
+        }
+
+        // Set a right joint of the current segment
+        if (jointRight) {
+          segmentArr = segment.toArray(new BezierCurve[segment.size()]);
+          double time = getTimeByLength(segmentArr, targetOffset, false);
+          int index = (int) Math.min(segmentArr.length - 1, Math.floor(time));
+          for (int j = 0; j < index; j++) {
+            segment.remove(segment.size() - 1);
+          }
+          segment.set(segment.size() - 1, segment.get(segment.size() - 1).split(time - index)[0]);
+        }
+
+        // Add curves to the skeleton
+        for (BezierCurve curve : segment) {
+          skeleton.add(curve);
+        }
+
+        // Make a right joint (whose end point will be updated in the next iteration)
+        if (jointRight) {
+          BezierCurve joint = new BezierCurve(new Vector2D[] {
+              segment.get(segment.size() - 1).getEndPoint(),
+              segmentData.get(segmentData.size() - 1).getEndPoint(),
+              i == segments.size() - 1 ? skeleton.get(0).getStartPoint() : Vector2D.NaN
+          });
+          if (joint.getEndPoint().equals(Vector2D.NaN)) {
+            skeleton.add(joint);
+          } else {
+            skeleton.add(adjustJoint(joint, skeleton.get(skeleton.size() - 1), skeleton.get(0)));
+          }
         }
       }
+      skeletons.add(skeleton);
     }
   }
 

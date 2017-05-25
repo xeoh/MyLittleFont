@@ -32,8 +32,8 @@ public abstract class HangulCharacter implements FeatureController.OnFeatureChan
   private static final int PRIORITY = 0;
 
   private static final String SKELETONS_KEY = "skeletons";
-  private ArrayList<ArrayList<BezierCurve>> skeletonsData;
-  private ArrayList<ArrayList<BezierCurve>> skeletons;
+  private ArrayList<ArrayList<ArrayList<BezierCurve>>> skeletonsData;
+  private ArrayList<ArrayList<ArrayList<BezierCurve>>> skeletons;
   private Region region;
   protected JsonObject data;
 
@@ -56,66 +56,59 @@ public abstract class HangulCharacter implements FeatureController.OnFeatureChan
     GsonBuilder gson = new GsonBuilder();
     gson.registerTypeAdapter(new TypeToken<Collection<Vector2D>>(){}.getType(),
         new JsonDeserializer<Collection<Vector2D>>() {
-      @Override
-      public Collection<Vector2D> deserialize(JsonElement json, Type typeOfT,
-                                              JsonDeserializationContext context) {
-        return new Gson().fromJson(json.getAsJsonObject().getAsJsonArray("points"),
-            new TypeToken<Collection<Vector2D>>(){}.getType());
-      }
-    });
+          @Override
+          public Collection<Vector2D> deserialize(JsonElement json, Type typeOfT,
+                                                  JsonDeserializationContext context) {
+            return new Gson().fromJson(json.getAsJsonObject().getAsJsonArray("points"),
+                new TypeToken<Collection<Vector2D>>(){}.getType());
+          }});
     ArrayList<ArrayList<ArrayList<Vector2D>>> skeletonsPoints = gson.create()
         .fromJson(data.getAsJsonArray(SKELETONS_KEY), collectionType);
 
-    // Construct skeletons data including generating joints
+    // Construct the skeletons data
     skeletonsData = new ArrayList<>();
     for (int i = 0; i < skeletonsPoints.size(); i++) {
-      skeletonsData.add(i, new ArrayList<BezierCurve>());
+      skeletonsData.add(i, new ArrayList<ArrayList<BezierCurve>>());
       for (int j = 0; j < skeletonsPoints.get(i).size(); j++) {
         ArrayList<Vector2D> points = skeletonsPoints.get(i).get(j);
-        // Valid points size
+        // Validate the points size
         if (points.size() <= 1) {
           continue;
         }
-        // Append a single line or curve
+
+        ArrayList<BezierCurve> segment = new ArrayList<>();
         if (points.size() <= 3) {
-          skeletonsData.get(i).add(new BezierCurve(points.toArray(new Vector2D[points.size()])));
+          segment.add(new BezierCurve(points.toArray(new Vector2D[points.size()])));
         } else {
-          // Append sequence of quadratic curves
-          skeletonsData.get(i).add(new BezierCurve(new Vector2D[] {
+          segment.add(new BezierCurve(new Vector2D[] {
               points.get(0), points.get(1), points.get(1).add(points.get(2)).scalarMultiply(.5)
           }));
           for (int k = 2; k < points.size() - 2; k++) {
-            skeletonsData.get(i).add(new BezierCurve(new Vector2D[] {
+            segment.add(new BezierCurve(new Vector2D[] {
                 points.get(k).add(points.get(k - 1)).scalarMultiply(.5),
                 points.get(k),
                 points.get(k).add(points.get(k + 1)).scalarMultiply(.5)
             }));
           }
-          skeletonsData.get(i).add(new BezierCurve(new Vector2D[] {
+          segment.add(new BezierCurve(new Vector2D[] {
               points.get(points.size() - 2).add(points.get(points.size() - 3)).scalarMultiply(.5),
               points.get(points.size() - 2),
               points.get(points.size() - 1)
           }));
         }
-        // Append joint
-        Vector2D endPoint = points.get(points.size() - 1);
-        Vector2D nextStartPoint = j == skeletonsPoints.get(i).size() - 1
-            ? skeletonsPoints.get(i).get(0).get(0)
-            : skeletonsPoints.get(i).get(j + 1).get(0);
-        if (endPoint.equals(nextStartPoint)) {
-          BezierCurve joint = new BezierCurve(new Vector2D[] {endPoint, endPoint, endPoint});
-          joint.setJoint(true);
-          skeletonsData.get(i).add(joint);
-        }
+        skeletonsData.get(i).add(segment);
       }
     }
 
-    // Copy skeletons data
+    // Copy the skeletons data
     skeletons = new ArrayList<>();
     for (int i = 0; i < skeletonsData.size(); i++) {
-      skeletons.add(i, new ArrayList<BezierCurve>());
+      skeletons.add(i, new ArrayList<ArrayList<BezierCurve>>());
       for (int j = 0; j < skeletonsData.get(i).size(); j++) {
-        skeletons.get(i).add(skeletonsData.get(i).get(j).clone());
+        skeletons.get(i).add(j, new ArrayList<BezierCurve>());
+        for (int k = 0; k < skeletonsData.get(i).get(j).size(); k++) {
+          skeletons.get(i).get(j).add(skeletonsData.get(i).get(j).get(k).clone());
+        }
       }
     }
 
@@ -130,12 +123,14 @@ public abstract class HangulCharacter implements FeatureController.OnFeatureChan
     double minY = ORIGIN_REGION.getMaxY();
     double maxY = ORIGIN_REGION.getMinY();
 
-    for (ArrayList<BezierCurve> skeleton : skeletonsData) {
-      for (BezierCurve bc : skeleton) {
-        minX = Math.min(minX, BezierCurveUtils.getMinX(bc));
-        maxX = Math.max(maxX, BezierCurveUtils.getMaxX(bc));
-        minY = Math.min(minY, BezierCurveUtils.getMinY(bc));
-        maxY = Math.max(maxY, BezierCurveUtils.getMaxY(bc));
+    for (ArrayList<ArrayList<BezierCurve>> skeletonData : skeletonsData) {
+      for (ArrayList<BezierCurve> segment : skeletonData) {
+        for (BezierCurve curve : segment) {
+          minX = Math.min(minX, BezierCurveUtils.getMinX(curve));
+          maxX = Math.max(maxX, BezierCurveUtils.getMaxX(curve));
+          minY = Math.min(minY, BezierCurveUtils.getMinY(curve));
+          maxY = Math.max(maxY, BezierCurveUtils.getMaxY(curve));
+        }
       }
     }
 
@@ -153,7 +148,7 @@ public abstract class HangulCharacter implements FeatureController.OnFeatureChan
    *
    * @return skeletons which is composed of 2D {@link kr.ac.kaist.team888.bezier.BezierCurve} array.
    */
-  public ArrayList<ArrayList<BezierCurve>> getSkeletons() {
+  public ArrayList<ArrayList<ArrayList<BezierCurve>>> getSkeletons() {
     return skeletons;
   }
 
