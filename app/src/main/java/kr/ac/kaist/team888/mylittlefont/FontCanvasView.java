@@ -22,6 +22,8 @@ public class FontCanvasView extends View implements FeatureController.OnFeatureC
   private static final float FIXED_POINT_RADIUS = 4f;
   private static final float CONTROL_POINT_RADIUS = 4f;
   private static final int PRIORITY = 2;
+  private static final int FONT_SIZE_MAX = 160;
+  private static final int FONT_SIZE_MIN = 24;
   private Paint contourPaint;
   private Paint contourLayoutPaint;
   private Paint skeletonPaint;
@@ -204,6 +206,21 @@ public class FontCanvasView extends View implements FeatureController.OnFeatureC
     double inches = point / 72;
     double xdpi = getResources().getDisplayMetrics().xdpi;
     return (int)(inches * xdpi);
+  }
+
+  /**
+   * Set font size.
+   *
+   * <p> Minimum font size is 24pt and maximum font size is 160pt.
+   *
+   * @param value font size with in range 0 ~ 1
+   *
+   * @return actual size of font
+   */
+  public int setFontSize(double value) {
+    fontSize = (int)((FONT_SIZE_MAX - FONT_SIZE_MIN) * value + FONT_SIZE_MIN);
+    invalidate();
+    return fontSize;
   }
 
   /**

@@ -14,6 +14,7 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.Switch;
+import android.widget.TextView;
 
 import kr.ac.kaist.team888.hangulcharacter.Hangul;
 import kr.ac.kaist.team888.locator.Locator;
@@ -100,6 +101,29 @@ public class FontMakerFragment extends Fragment {
         fontCanvasView.viewSkeleton(isChecked);
       }
     });
+
+    final TextView fontSizeText = (TextView) view.getRootView().findViewById(R.id.fontSizeText);
+
+    SeekBar sizeControl = (SeekBar) view.getRootView().findViewById(R.id.fontSizeControl);
+    sizeControl.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+      @Override
+      public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+        int fontSize = fontCanvasView.setFontSize(progress / 100.0);
+        fontSizeText.setText(String.format("Font Size: %dpt", fontSize));
+      }
+
+      @Override
+      public void onStartTrackingTouch(SeekBar seekBar) {
+
+      }
+
+      @Override
+      public void onStopTrackingTouch(SeekBar seekBar) {
+
+      }
+    });
+    sizeControl.setProgress(25);
+
 
     // Feature - curve
     SeekBar curveControl = (SeekBar) view.getRootView().findViewById(R.id.curveControl);
