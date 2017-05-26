@@ -174,6 +174,21 @@ public enum Hangul {
     return values()[index + offset];
   }
 
+  /**
+   * Check whether given character is Hangul or not.
+   *
+   * @param value value to check
+   * @return true when given value is Hangul otherwise false
+   */
+  public static boolean isHangul(char value) {
+    if (0xAC00 <= value && value <= 0xD7AF) {
+      return true;
+    } else if (0x3131 <= value && value <= 0x3163) {
+      return true;
+    }
+    return false;
+  }
+
   @Override
   public String toString() {
     return this.name;

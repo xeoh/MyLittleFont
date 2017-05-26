@@ -15,6 +15,7 @@ import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.Switch;
 
+import kr.ac.kaist.team888.hangulcharacter.Hangul;
 import kr.ac.kaist.team888.locator.Locator;
 import kr.ac.kaist.team888.util.FeatureController;
 
@@ -68,6 +69,7 @@ public class FontMakerFragment extends Fragment {
 
       @Override
       public void afterTextChanged(Editable sequence) {
+        String editText = "";
         HashMap<Character, Locator> charLocatorMap = new HashMap<>();
         for (int i = 0; i < drawingText.length(); i++) {
           charLocatorMap.put(drawingText.charAt(i), locators.get(i));
@@ -76,15 +78,18 @@ public class FontMakerFragment extends Fragment {
         locators = new ArrayList<>();
         for (int i = 0; i < sequence.length(); i++) {
           char key = sequence.charAt(i);
-          if (charLocatorMap.containsKey(key)) {
-            locators.add(charLocatorMap.get(key));
-          } else {
-            locators.add(new Locator(key));
+          if (Hangul.isHangul(key)) {
+            if (charLocatorMap.containsKey(key)) {
+              locators.add(charLocatorMap.get(key));
+            } else {
+              locators.add(new Locator(key));
+            }
+            editText += key;
           }
         }
 
         fontCanvasView.drawLocators(locators);
-        drawingText = sequence.toString();
+        drawingText = editText;
       }
     });
 
