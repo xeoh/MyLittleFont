@@ -29,9 +29,27 @@ public class CharacterLoader {
         HangulKey ref = (HangulKey) obj;
         boolean equal = true;
 
-        equal = equal && key1.equals(ref.key1);
-        equal = equal && key2.equals(ref.key2);
-        equal = equal && key3.equals(ref.key3);
+        if ((key1 == null) != (ref.key1 == null)) {
+          return false;
+        }
+        if (key1 != null) {
+          equal = equal && key1.equals(ref.key1);
+        }
+
+        if ((key2 == null) != (ref.key2 == null)) {
+          return false;
+        }
+        if (key2 != null) {
+          equal = equal && key2.equals(ref.key2);
+        }
+
+        if ((key3 == null) != (ref.key3 == null)) {
+          return false;
+        }
+        if (key3 != null) {
+          equal = equal && key3.equals(ref.key3);
+        }
+
 
         return equal;
       }
