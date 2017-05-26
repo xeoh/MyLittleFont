@@ -22,6 +22,7 @@ public class FeatureController {
   private double curve = 0;
   private double roundness = 0;
   private double weight = .5;
+  private double gap = 0.1;
 
   /**
    * Interface for listening change of hangul features.
@@ -138,6 +139,28 @@ public class FeatureController {
    */
   public void setWeight(double weight) {
     this.weight = weight;
+    onFeatureChange();
+  }
+
+  /**
+   * Getter gap value.
+   *
+   * <p> Space is proportional value. If gap is 1, then gap between letter is same
+   * size as width of letter
+   *
+   * @return gap value
+   */
+  public double getGap() {
+    return gap;
+  }
+
+  /**
+   * Setter gap value.
+   *
+   * @param gap gap value
+   */
+  public void setGap(double gap) {
+    this.gap = gap;
     onFeatureChange();
   }
 }
