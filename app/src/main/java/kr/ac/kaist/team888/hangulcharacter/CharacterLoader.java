@@ -113,47 +113,47 @@ public class CharacterLoader {
             new Pieup())
         .put(new HangulKey(Hangul.SIN_HIEUT, Hangul.INIT_HIEUT, Hangul.FIN_HIEUT),
             new Hieut())
-        .put(new HangulKey(Hangul.MEDI_AH, null, null),
+        .put(new HangulKey(Hangul.MEDI_AH, Hangul.SIN_AH, null),
             new Ah())
-        .put(new HangulKey(Hangul.MEDI_AE, null, null),
+        .put(new HangulKey(Hangul.MEDI_AE, Hangul.SIN_AE, null),
             new Ae())
-        .put(new HangulKey(Hangul.MEDI_YA, null, null),
+        .put(new HangulKey(Hangul.MEDI_YA, Hangul.SIN_YA, null),
             new Ya())
-        .put(new HangulKey(Hangul.MEDI_YAE, null, null),
+        .put(new HangulKey(Hangul.MEDI_YAE, Hangul.SIN_YAE, null),
             new Yae())
-        .put(new HangulKey(Hangul.MEDI_Eo, null, null),
+        .put(new HangulKey(Hangul.MEDI_Eo, Hangul.SIN_Eo, null),
             new Eo())
-        .put(new HangulKey(Hangul.MEDI_Eh, null, null),
+        .put(new HangulKey(Hangul.MEDI_Eh, Hangul.SIN_Eh, null),
             new Eh())
-        .put(new HangulKey(Hangul.MEDI_YEO, null, null),
+        .put(new HangulKey(Hangul.MEDI_YEO, Hangul.SIN_YEO, null),
             new Yeo())
-        .put(new HangulKey(Hangul.MEDI_YE, null, null),
+        .put(new HangulKey(Hangul.MEDI_YE, Hangul.SIN_YE, null),
             new Ye())
-        .put(new HangulKey(Hangul.MEDI_OH, null, null),
+        .put(new HangulKey(Hangul.MEDI_OH, Hangul.SIN_OH, null),
             new Oh())
-        .put(new HangulKey(Hangul.MEDI_YU, null, null),
+        .put(new HangulKey(Hangul.MEDI_YU, Hangul.SIN_YU, null),
             new Yu())
-        .put(new HangulKey(Hangul.MEDI_WA, null, null),
+        .put(new HangulKey(Hangul.MEDI_WA, Hangul.SIN_WA, null),
             new Wa())
-        .put(new HangulKey(Hangul.MEDI_YO, null, null),
+        .put(new HangulKey(Hangul.MEDI_YO, Hangul.SIN_YO, null),
             new Yo())
-        .put(new HangulKey(Hangul.MEDI_WAE, null, null),
+        .put(new HangulKey(Hangul.MEDI_WAE, Hangul.SIN_WAE, null),
             new Wae())
-        .put(new HangulKey(Hangul.MEDI_OE, null, null),
+        .put(new HangulKey(Hangul.MEDI_OE, Hangul.SIN_OE, null),
             new Oe())
-        .put(new HangulKey(Hangul.MEDI_UH, null, null),
+        .put(new HangulKey(Hangul.MEDI_UH, Hangul.SIN_UH, null),
             new Uh())
-        .put(new HangulKey(Hangul.MEDI_WEO, null, null),
+        .put(new HangulKey(Hangul.MEDI_WEO, Hangul.SIN_WEO, null),
             new Weo())
-        .put(new HangulKey(Hangul.MEDI_WE, null, null),
+        .put(new HangulKey(Hangul.MEDI_WE, Hangul.SIN_WE, null),
             new We())
-        .put(new HangulKey(Hangul.MEDI_WI, null, null),
+        .put(new HangulKey(Hangul.MEDI_WI, Hangul.SIN_WI, null),
             new Wi())
-        .put(new HangulKey(Hangul.MEDI_EU, null, null),
+        .put(new HangulKey(Hangul.MEDI_EU, Hangul.SIN_EU, null),
             new Eu())
-        .put(new HangulKey(Hangul.MEDI_YI, null, null),
+        .put(new HangulKey(Hangul.MEDI_YI, Hangul.SIN_YI, null),
             new Yi())
-        .put(new HangulKey(Hangul.MEDI_IH, null, null),
+        .put(new HangulKey(Hangul.MEDI_IH, Hangul.SIN_IH, null),
             new Ih())
         .put(new HangulKey(Hangul.FIN_GIYEOK_SIOT, null, null),
             new GiyeokSiot())
