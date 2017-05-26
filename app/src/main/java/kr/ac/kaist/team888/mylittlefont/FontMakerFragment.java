@@ -29,8 +29,6 @@ public class FontMakerFragment extends Fragment {
     super.onViewCreated(view, savedInstanceState);
 
     fontCanvasView = (FontCanvasView) view.getRootView().findViewById(R.id.fontCanvas);
-    Locator locator = new Locator('갈');
-    fontCanvasView.drawLocators(locator);
 
     Switch viewSkeletonBtn = (Switch) view.getRootView().findViewById(R.id.viewSkeletonBtn);
     viewSkeletonBtn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {

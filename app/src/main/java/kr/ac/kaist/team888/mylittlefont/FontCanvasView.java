@@ -14,6 +14,9 @@ import kr.ac.kaist.team888.util.FeatureController;
 
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 public class FontCanvasView extends View implements FeatureController.OnFeatureChangeListener {
   private static final float CANVAS_OFFSET_RATIO = 0.05f;
   private static final float FIXED_POINT_RADIUS = 4f;
@@ -24,7 +27,10 @@ public class FontCanvasView extends View implements FeatureController.OnFeatureC
   private Paint skeletonPaint;
   private Paint fixedPaint;
   private Paint controlPaint;
-  private Locator locator;
+  private Collection<Locator> locators;
+  private ArrayList<Region> regions;
+  private int fontSize = 72;
+  private double lineMargin = 0.15;
 
   private Region canvasRegion = new Region(0, 0, 0, 0);
 
@@ -46,6 +52,8 @@ public class FontCanvasView extends View implements FeatureController.OnFeatureC
   }
 
   private void initialize() {
+    regions = new ArrayList<>();
+
     contourPaint = new Paint();
     contourPaint.setColor(Color.BLACK);
     contourPaint.setStyle(Paint.Style.FILL);
@@ -98,46 +106,104 @@ public class FontCanvasView extends View implements FeatureController.OnFeatureC
 
   @Override
   public void onDraw(Canvas canvas) {
-    if (locator == null) {
+    if (locators == null || locators.isEmpty()) {
       return;
     }
 
-    locator.invalidate(canvasRegion);
+    calculateRegions();
 
-    if (skeletonView) {
-      for (Path path : locator.getContourPaths()) {
-        canvas.drawPath(path, contourLayoutPaint);
-      }
+    int count = 0;
+    for (Locator locator : locators) {
+      locator.invalidate(regions.get(count));
+      if (skeletonView) {
+        for (Path path : locator.getContourPaths()) {
+          canvas.drawPath(path, contourLayoutPaint);
+        }
 
-      for (Path path : locator.getSkeletonPaths()) {
-        canvas.drawPath(path, skeletonPaint);
-      }
+        for (Path path : locator.getSkeletonPaths()) {
+          canvas.drawPath(path, skeletonPaint);
+        }
 
-      for (Vector2D fixed : locator.getFixedCircles()) {
-        canvas.drawCircle((float) fixed.getX(), (float) fixed.getY(),
-            FIXED_POINT_RADIUS, fixedPaint);
-      }
+        for (Vector2D fixed : locator.getFixedCircles()) {
+          canvas.drawCircle((float) fixed.getX(), (float) fixed.getY(),
+              FIXED_POINT_RADIUS, fixedPaint);
+        }
 
-      for (Vector2D control : locator.getControlCircles()) {
-        canvas.drawCircle((float) control.getX(), (float) control.getY(),
-            CONTROL_POINT_RADIUS, controlPaint);
+        for (Vector2D control : locator.getControlCircles()) {
+          canvas.drawCircle((float) control.getX(), (float) control.getY(),
+              CONTROL_POINT_RADIUS, controlPaint);
+        }
+      } else {
+        for (Path path : locator.getContourPaths()) {
+          canvas.drawPath(path, contourPaint);
+        }
       }
-    } else {
-      for (Path path : locator.getContourPaths()) {
-        canvas.drawPath(path, contourPaint);
-      }
+      count++;
     }
   }
 
   /**
    * Draw given locators.
    *
-   * @param locators locator to draw.
+   * @param locators locators to draw.
    */
-  public void drawLocators(Locator locators) {
-    // TODO: draw multiple character
-    this.locator = locators;
+  public void drawLocators(Collection<Locator> locators) {
+    this.locators = locators;
     invalidate();
+  }
+
+  private void calculateRegions() {
+    regions.clear();
+
+    // ratio = (x2 - x1) / (y2 - y1)
+    double regionRatio = (Locator.ORIGIN_REGION.getMaxX() - Locator.ORIGIN_REGION.getMinX())
+        / (Locator.ORIGIN_REGION.getMaxY() - Locator.ORIGIN_REGION.getMinY());
+
+    // getting one region's size
+    double gap = FeatureController.getInstance().getGap();
+    int regionWidth = ptToCanvas(fontSize);
+    int gapWidthSize = (int)(regionWidth * gap);
+    int regionHeight = (int)(regionWidth / regionRatio);
+    int gapHeightSize = (int)(regionHeight * lineMargin);
+
+    int maxCol = getWidth() / (regionWidth + gapWidthSize);
+
+    int locatorsCount = locators.size();
+    int rowCount = (int)(Math.ceil(locatorsCount / (double)maxCol));
+
+    // getting base position of y
+    int heightBase = (int) (getHeight() / 2 - (rowCount / 2.0 * (regionHeight + gapHeightSize)));
+    if (heightBase < 0) {
+      heightBase = 0;
+    }
+
+    for (int i = 0; i < rowCount; i++) {
+      int curHeight = heightBase + (regionHeight + gapHeightSize) * i;
+
+      int colCount;
+      if (locatorsCount > maxCol) {
+        colCount = maxCol;
+        locatorsCount -= maxCol;
+      } else {
+        colCount = locatorsCount;
+        locatorsCount = 0;
+      }
+
+      int widthBase = (int) (getWidth() / 2 - (colCount / 2.0) * (regionWidth + gapWidthSize));
+
+      for (int j = 0; j < colCount; j++) {
+        int curWidth = widthBase + (regionWidth + gapWidthSize) * j;
+        Region region = new Region(curWidth, curWidth + regionWidth,
+            curHeight + regionHeight, curHeight);
+        regions.add(region);
+      }
+    }
+  }
+
+  private int ptToCanvas(double point) {
+    double inches = point / 72;
+    double xdpi = getResources().getDisplayMetrics().xdpi;
+    return (int)(inches * xdpi);
   }
 
   /**
