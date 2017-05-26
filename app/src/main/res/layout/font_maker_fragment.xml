@@ -57,11 +57,21 @@
             android:progress="50"/>
     </LinearLayout>
 
+    <EditText
+        android:id="@+id/sample_text"
+        app:layout_widthPercent="70%"
+        app:layout_heightPercent="10%"
+        app:layout_marginLeftPercent="30%"
+        android:hint="Sample Text"
+        android:inputType="text"/>
+
     <kr.ac.kaist.team888.mylittlefont.FontCanvasView
         android:id="@+id/fontCanvas"
         app:layout_widthPercent="70%"
-        app:layout_heightPercent="100%"
+        app:layout_heightPercent="90%"
         app:layout_marginLeftPercent="30%"
+        app:layout_marginTopPercent="10%"
+        android:clickable="true"
         android:background="#ffffff"/>
 
     <RelativeLayout

@@ -58,7 +58,7 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
    */
   public Locator(char letter) {
     characters = HangulDecomposer.decompose(letter);
-    regions = calculateRegions();
+    calculateRegions();
 
     initialize();
 
@@ -91,15 +91,20 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
     applyContour();
   }
 
-  private ArrayList<Region> calculateRegions() {
-    String type = String.format(TYPE_TOKEN, characters.size());
-    String medialToken = characters.get(1).getClass().getSimpleName();
-    JsonArray baseLocatorData = JsonLoader.getInstance().getLocatorData(type, medialToken);
-    Gson gson = new Gson();
-    Type collectionType = new TypeToken<Collection<Region>>(){}.getType();
-    ArrayList<Region> regions = gson.fromJson(baseLocatorData, collectionType);
-
-    return regions;
+  private void calculateRegions() {
+    if (characters.size() > 1) {
+      String type = String.format(TYPE_TOKEN, characters.size());
+      String medialToken = characters.get(1).getClass().getSimpleName();
+      JsonArray baseLocatorData = JsonLoader.getInstance().getLocatorData(type, medialToken);
+      Gson gson = new Gson();
+      Type collectionType = new TypeToken<Collection<Region>>(){}.getType();
+      regions = gson.fromJson(baseLocatorData, collectionType);
+    } else if (characters.size() == 1) {
+      regions = new ArrayList<>();
+      regions.add(characters.get(0).getRegion());
+    } else {
+      regions = new ArrayList<>();
+    }
   }
 
   /**
