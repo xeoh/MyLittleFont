@@ -82,7 +82,7 @@ public enum Hangul {
   FIN_RIEUL_HIEUT   ("RieulHieut",  0x11B6),// ㄹㅎ
   FIN_MIEUM         ("Mieum",       0x11B7),// ㅁ
   FIN_BIEUP         ("Bieup",       0x11B8),// ㅂ
-  FIN_BIEUP_SIOT    ("BieupSiot",   0x11B9),// ㅃ
+  FIN_BIEUP_SIOT    ("BieupSiot",   0x11B9),// ㅂㅅ
   FIN_SIOT          ("Siot",        0x11BA),// ㅅ
   FIN_SS_SIOT       ("SsangSiot",   0x11BB),// ㅆ
   FIN_IEUNG         ("Ieung",       0x11BC),// ㅇ
