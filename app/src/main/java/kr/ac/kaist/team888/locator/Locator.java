@@ -261,9 +261,9 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
         // Fetch joints information
         ArrayList<BezierCurve> leftSegment = segments.get(i == 0 ? segments.size() - 1 : i - 1);
         ArrayList<BezierCurve> rightSegment = segments.get(i == segments.size() - 1 ? 0 : i + 1);
-        boolean jointLeft = segment.get(0).getStartPoint()
+        boolean jointLeft = segments.size() > 1 && segment.get(0).getStartPoint()
             .equals(leftSegment.get(leftSegment.size() - 1).getEndPoint());
-        boolean jointRight = segment.get(segment.size() - 1).getEndPoint()
+        boolean jointRight = segments.size() > 1 && segment.get(segment.size() - 1).getEndPoint()
             .equals(rightSegment.get(0).getStartPoint());
 
         // Add curves of segment if both joints are not needed

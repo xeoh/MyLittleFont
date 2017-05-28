@@ -179,7 +179,7 @@ public class BezierCurveUtils {
         value += getLength(curves[i], i == 0 ? min : 0, max - i);
         break;
       }
-      value += getLength(curves[i], i == 0 ? min : 0, 1);
+      value += getLength(curves[i], i == startIndex ? min - i : 0, 1);
     }
     return sign * value;
   }
