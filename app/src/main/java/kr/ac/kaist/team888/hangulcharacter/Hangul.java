@@ -25,6 +25,27 @@ public enum Hangul {
   SIN_TIEUT     ("Tieut",         0x314C),  // ㅌ
   SIN_PIEUP     ("Pieup",         0x314D),  // ㅍ
   SIN_HIEUT     ("Hieut",         0x314E),  // ㅎ
+  SIN_AH        ("Ah",  0x314f),           // ㅏ
+  SIN_AE        ("Ae",  0x3150),           // ㅐ
+  SIN_YA        ("Ya",  0x3151),           // ㅑ
+  SIN_YAE       ("Yae", 0x3152),           // ㅒ
+  SIN_Eo        ("Eo",  0x3153),           // ㅓ
+  SIN_Eh        ("Eh",  0x3154),           // ㅔ
+  SIN_YEO       ("Yeo", 0x3155),           // ㅕ
+  SIN_YE        ("Ye",  0x3156),           // ㅖ
+  SIN_OH        ("Oh",  0x3157),           // ㅗ
+  SIN_WA        ("Wa",  0x3158),           // ㅘ
+  SIN_WAE       ("Wae", 0x3159),           // ㅙ
+  SIN_OE        ("Oe",  0x315A),           // ㅚ
+  SIN_YO        ("Yo",  0x315B),           // ㅛ
+  SIN_UH        ("Uh",  0x315C),           // ㅜ
+  SIN_WEO       ("Weo", 0x315D),           // ㅝ
+  SIN_WE        ("We",  0x315E),           // ㅞ
+  SIN_WI        ("Wi",  0x315F),           // ㅟ
+  SIN_YU        ("Yu",  0x3160),           // ㅠ
+  SIN_EU        ("Eu",  0x3161),           // ㅡ
+  SIN_YI        ("Yi",  0x3162),           // ㅢ
+  SIN_IH        ("Ih",  0x3163),           // ㅣ
   INIT_GIYEOK    ("Giyeok",       0x1100),  // ㄱ
   INIT_SS_GIYEOK ("SsangGiyeok",  0x1101),  // ㄲ
   INIT_NIEUN     ("Nieum",        0x1102),  // ㄴ
@@ -94,12 +115,12 @@ public enum Hangul {
   FIN_HIEUT         ("Hieut",       0x11C2),// ㅎ
   NONE              ("None", -1);
 
-  private static final int SINGLE_COUNT = 19;
+  private static final int SINGLE_COUNT = 41;
   private static final int INITIAL_COUNT = 19;
   private static final int MEDIAL_COUNT = 21;
 
   private static final int SINGLE_UNICODE_BEGIN = 0x3131;
-  private static final int SINGLE_UNICODE_END = 0x314E;
+  private static final int SINGLE_UNICODE_END = 0x3163;
   private static final int INITIAL_UNICODE_BEGIN = 0x1100;
   private static final int INITIAL_UNICODE_END = 0x1112;
   private static final int MEDIAL_UNICODE_BEGIN = 0x1161;
@@ -151,6 +172,21 @@ public enum Hangul {
     }
 
     return values()[index + offset];
+  }
+
+  /**
+   * Check whether given character is Hangul or not.
+   *
+   * @param value value to check
+   * @return true when given value is Hangul otherwise false
+   */
+  public static boolean isHangul(char value) {
+    if (0xAC00 <= value && value <= 0xD7AF) {
+      return true;
+    } else if (0x3131 <= value && value <= 0x3163) {
+      return true;
+    }
+    return false;
   }
 
   @Override
