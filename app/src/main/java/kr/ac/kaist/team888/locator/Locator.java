@@ -27,13 +27,18 @@ import java.util.Collection;
  */
 public class Locator implements FeatureController.OnFeatureChangeListener{
   private static final String TYPE_TOKEN = "type%d";
-  public static final Region ORIGIN_REGION = HangulCharacter.ORIGIN_REGION;
-
   private static final int CURVE_MAX = 70;
   private static final int CURVE_GAP = 2;
   private static final double CURVE_TOLERANCE = 1E-4;
   private static final int WEIGHT_DEFAULT = 32;
+  private static final double WIDTH_MIN = 0.7;
+  private static final double WIDTH_MAX = 1.3;
   private static final int PRIORITY = 1;
+
+  public static Region locatorRegion = new Region(HangulCharacter.ORIGIN_REGION.getMinX(),
+      HangulCharacter.ORIGIN_REGION.getMaxX(),
+      HangulCharacter.ORIGIN_REGION.getMinY(),
+      HangulCharacter.ORIGIN_REGION.getMaxY());
 
   private ArrayList<Region> regions;
   private ArrayList<HangulCharacter> characters;
@@ -88,6 +93,7 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
     }
 
     applyCurve();
+    applyWidth();
     applyContour();
   }
 
@@ -354,11 +360,28 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
     }
   }
 
+  private void applyWidth() {
+    double width = (WIDTH_MAX - WIDTH_MIN) * FeatureController.getInstance().getWidth() + WIDTH_MIN;
+    double totalWidth = (HangulCharacter.ORIGIN_REGION.getMaxX()
+        - HangulCharacter.ORIGIN_REGION.getMinX()) * width;
+    double widthCenter = HangulCharacter.ORIGIN_REGION.getMaxX()
+        - HangulCharacter.ORIGIN_REGION.getMinX() / 2;
+    locatorRegion.setMinX(widthCenter - totalWidth / 2);
+    locatorRegion.setMaxX(widthCenter + totalWidth / 2);
+
+    for (ArrayList<BezierCurve> skeleton : skeletons) {
+      for (int i = 0; i < skeleton.size(); i++) {
+        skeleton.set(i,
+            HangulCharacter.ORIGIN_REGION.transformBezierCurve(locatorRegion, skeleton.get(i)));
+      }
+    }
+  }
+
   private void setPaths(Region canvasRegion, ArrayList<ArrayList<BezierCurve>> curvesSet,
                         ArrayList<Path> paths, boolean showPoints) {
     for (ArrayList<BezierCurve> curves : curvesSet) {
       Path path = new Path();
-      BezierCurve transInitial = ORIGIN_REGION.transformBezierCurve(canvasRegion, curves.get(0));
+      BezierCurve transInitial = locatorRegion.transformBezierCurve(canvasRegion, curves.get(0));
       path.moveTo((float) transInitial.getStartPoint().getX(),
           (float) transInitial.getStartPoint().getY());
 
@@ -367,7 +390,7 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
           continue;
         }
 
-        BezierCurve transCurve = ORIGIN_REGION.transformBezierCurve(canvasRegion, curve);
+        BezierCurve transCurve = locatorRegion.transformBezierCurve(canvasRegion, curve);
         if (showPoints) {
           fixedCircles.add(transCurve.getStartPoint());
         }
@@ -413,6 +436,7 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
   @Override
   public void onFeatureChange() {
     applyCurve();
+    applyWidth();
     applyContour();
   }
 
