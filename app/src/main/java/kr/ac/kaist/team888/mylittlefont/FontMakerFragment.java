@@ -56,7 +56,6 @@ public class FontMakerFragment extends Fragment {
     });
 
     sampleTextInput = (EditText) view.getRootView().findViewById(R.id.sample_text);
-    sampleTextInput = (EditText) view.getRootView().findViewById(R.id.sample_text);
     sampleTextInput.addTextChangedListener(new TextWatcher() {
       @Override
       public void beforeTextChanged(CharSequence sequence, int start, int count, int after) {
