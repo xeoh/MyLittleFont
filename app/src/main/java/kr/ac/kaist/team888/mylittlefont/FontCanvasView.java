@@ -168,7 +168,16 @@ public class FontCanvasView extends View implements FeatureController.OnFeatureC
     int regionHeight = (int)(regionWidth / regionRatio);
     int gapHeightSize = (int)(regionHeight * lineMargin);
 
-    int maxCol = getWidth() / (regionWidth + gapWidthSize);
+    int maxCol = Math.max(1, getWidth() / (regionWidth + gapWidthSize));
+    if (maxCol == 1) {
+      regionWidth = getWidth();
+      regionHeight = (int) (regionWidth / regionRatio);
+      if (regionHeight > getHeight()) {
+        regionHeight = getHeight();
+        regionWidth = (int) (regionHeight * regionRatio);
+      }
+      gapWidthSize = 0;
+    }
 
     int locatorsCount = locators.size();
     int rowCount = (int)(Math.ceil(locatorsCount / (double)maxCol));
