@@ -172,5 +172,20 @@ public class FontMakerFragment extends Fragment {
       public void onStopTrackingTouch(SeekBar seekBar) { }
     });
 
+    // Feature - width
+    SeekBar widthControl = (SeekBar) view.getRootView().findViewById(R.id.widthControl);
+    widthControl.setProgress(50);
+    widthControl.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+      @Override
+      public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+        FeatureController.getInstance().setWidth(progress / 100.0);
+      }
+
+      @Override
+      public void onStartTrackingTouch(SeekBar seekBar) { }
+
+      @Override
+      public void onStopTrackingTouch(SeekBar seekBar) { }
+    });
   }
 }

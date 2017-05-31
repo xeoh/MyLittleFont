@@ -23,6 +23,7 @@ public class FeatureController {
   private double roundness = 0;
   private double weight = .5;
   private double gap = 0.1;
+  private double width = .5;
 
   /**
    * Interface for listening change of hangul features.
@@ -161,6 +162,28 @@ public class FeatureController {
    */
   public void setGap(double gap) {
     this.gap = gap;
+    onFeatureChange();
+  }
+
+  /**
+   * Getter width value.
+   *
+   * <p> Width is proportional value. If width is 1, {@link kr.ac.kaist.team888.locator.Locator}
+   * automatically computes maximum width. If 0, minimum width.
+   *
+   * @return width value
+   */
+  public double getWidth() {
+    return width;
+  }
+
+  /**
+   * Setter width value.
+   *
+   * @param width width value
+   */
+  public void setWidth(double width) {
+    this.width = width;
     onFeatureChange();
   }
 }

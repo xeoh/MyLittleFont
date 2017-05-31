@@ -158,15 +158,16 @@ public class FontCanvasView extends View implements FeatureController.OnFeatureC
     regions.clear();
 
     // ratio = (x2 - x1) / (y2 - y1)
-    double regionRatio = (Locator.ORIGIN_REGION.getMaxX() - Locator.ORIGIN_REGION.getMinX())
-        / (Locator.ORIGIN_REGION.getMaxY() - Locator.ORIGIN_REGION.getMinY());
+    double regionRatio = (Locator.locatorRegion.getMaxX() - Locator.locatorRegion.getMinX())
+        / (Locator.locatorRegion.getMaxY() - Locator.locatorRegion.getMinY());
 
     // getting one region's size
     double gap = FeatureController.getInstance().getGap();
-    int regionWidth = ptToCanvas(fontSize);
-    int gapWidthSize = (int)(regionWidth * gap);
-    int regionHeight = (int)(regionWidth / regionRatio);
-    int gapHeightSize = (int)(regionHeight * lineMargin);
+    int regionHeight = ptToCanvas(fontSize);
+    int regionWidth = (int) (regionHeight * regionRatio);
+
+    int gapWidthSize = (int) (regionWidth * gap);
+    int gapHeightSize = (int) (regionHeight * lineMargin);
 
     int maxCol = Math.max(1, getWidth() / (regionWidth + gapWidthSize));
     if (maxCol == 1) {
@@ -180,7 +181,7 @@ public class FontCanvasView extends View implements FeatureController.OnFeatureC
     }
 
     int locatorsCount = locators.size();
-    int rowCount = (int)(Math.ceil(locatorsCount / (double)maxCol));
+    int rowCount = (int) (Math.ceil(locatorsCount / (double) maxCol));
 
     // getting base position of y
     int heightBase = (int) (getHeight() / 2 - (rowCount / 2.0 * (regionHeight + gapHeightSize)));
