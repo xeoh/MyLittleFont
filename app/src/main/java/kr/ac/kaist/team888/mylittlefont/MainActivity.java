@@ -21,6 +21,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.Toast;
+
+import kr.ac.kaist.team888.util.DatabaseOpenHelper;
+import kr.ac.kaist.team888.util.FeatureController;
 
 public class MainActivity extends AppCompatActivity
     implements NavigationView.OnNavigationItemSelectedListener {
@@ -31,6 +40,7 @@ public class MainActivity extends AppCompatActivity
 
   private FontMakerFragment fontMakerFragment;
   private FontViewerFragment fontViewerFragment;
+  private DatabaseOpenHelper db = new DatabaseOpenHelper(getApplicationContext());
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -76,17 +86,16 @@ public class MainActivity extends AppCompatActivity
 
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
-    // Handle action bar item clicks here. The action bar will
-    // automatically handle clicks on the Home/Up button, so long
-    // as you specify a parent activity in AndroidManifest.xml.
-    int id = item.getItemId();
-
-    //noinspection SimplifiableIfStatement
-    if (id == R.id.action_settings) {
-      return true;
+    switch (item.getItemId()) {
+      case R.id.action_save:
+        saveFeatureValues();
+        return true;
+      case R.id.action_load:
+        loadFeatureValues();
+        return true;
+      default:
+        return super.onOptionsItemSelected(item);
     }
-
-    return super.onOptionsItemSelected(item);
   }
 
   @SuppressWarnings("StatementWithEmptyBody")
@@ -176,6 +185,84 @@ public class MainActivity extends AppCompatActivity
             finishAndRemoveTask();
           }
         });
+
+    dialog.show();
+  }
+
+  private void saveFeatureValues() {
+    final EditText nameInput = new EditText(this);
+    nameInput.setSingleLine();
+
+    AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+    dialogBuilder.setTitle(R.string.feature_save_name);
+    dialogBuilder.setView(nameInput);
+    dialogBuilder.setPositiveButton(R.string.feature_save, null);
+    dialogBuilder.setNegativeButton(R.string.feature_save_cancel,
+        new DialogInterface.OnClickListener() {
+          @Override
+          public void onClick(DialogInterface dialog, int which) { }
+        });
+
+    AlertDialog dialog = dialogBuilder.create();
+
+    // When the save button is clicked.
+    dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+      @Override
+      public void onShow(final DialogInterface dialog) {
+        Button button = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
+        button.setOnClickListener(new View.OnClickListener() {
+          @Override
+          public void onClick(View view) {
+            String name = nameInput.getText().toString();
+            // Name should not be empty.
+            if (name.isEmpty()) {
+              Toast.makeText(getApplicationContext(), R.string.feature_save_empty_name,
+                  Toast.LENGTH_SHORT).show();
+              return;
+            }
+            new DatabaseOpenHelper(getApplicationContext())
+                .saveItem(nameInput.getText().toString());
+            Toast.makeText(getApplicationContext(), R.string.feature_save_success,
+                Toast.LENGTH_SHORT).show();
+            dialog.dismiss();
+          }
+        });
+      }
+    });
+
+    dialog.show();
+  }
+
+  private void loadFeatureValues() {
+    FontLoaderAdapter listAdapter = new FontLoaderAdapter(this);
+    ListView listView = new ListView(this);
+    listView.setAdapter(listAdapter);
+
+    for (FontItem item : db.loadItems()) {
+      listAdapter.addItem(item);
+    }
+
+    AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+    dialogBuilder.setTitle(R.string.feature_load_title);
+    dialogBuilder.setView(listView);
+    dialogBuilder.setNegativeButton(R.string.feature_load_cancel,
+        new DialogInterface.OnClickListener() {
+          @Override
+          public void onClick(DialogInterface dialog, int which) { }
+        });
+
+    final AlertDialog dialog = dialogBuilder.create();
+
+    // When an item clicked.
+    listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+      @Override
+      public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        FontItem item = (FontItem) parent.getAdapter().getItem(position);
+        changeFragment(fontMakerFragment);
+        FeatureController.getInstance().setFeatures(item);
+        dialog.dismiss();
+      }
+    });
 
     dialog.show();
   }

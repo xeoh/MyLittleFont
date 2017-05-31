@@ -92,9 +92,7 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
       }
     }
 
-    applyCurve();
-    applyWidth();
-    applyContour();
+    onFeatureChange();
   }
 
   private void calculateRegions() {
@@ -210,7 +208,7 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
   }
 
   private BezierCurve adjustJoint(BezierCurve joint, BezierCurve leftCurve,
-                                  BezierCurve rightCurve) {
+                                  BezierCurve rightCurve, double offset) {
     Vector2D startVector = joint.getStartPoint()
         .subtract(leftCurve.getPoint(leftCurve.getOrder() - 1));
     Vector2D endVector = rightCurve.getPoint(1).subtract(joint.getEndPoint());
@@ -223,7 +221,6 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
             joint.getEndPoint()
         });
       }
-      double offset = FeatureController.getInstance().getCurve() * CURVE_MAX;
       return new BezierCurve(new Vector2D[] {
           joint.getStartPoint(),
           joint.getStartPoint().add(offset, startVector.normalize()),
@@ -242,8 +239,13 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
     });
   }
 
-  private void applyCurve() {
-    double offset = FeatureController.getInstance().getCurve() * CURVE_MAX;
+  /**
+   * Applies curve by given curve control value.
+   *
+   * @param curveControl curve control value from 0 to 1
+   */
+  public void applyCurve(double curveControl) {
+    double offset = curveControl * CURVE_MAX;
     skeletons = new ArrayList<>();
     // Omit creating joints and appending curve if offset is just 0
     if (offset == 0) {
@@ -305,7 +307,7 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
             BezierCurve joint = skeleton.get(skeleton.size() - 1);
             BezierCurve rightCurve = segment.get(0);
             joint.setEndPoint(rightCurve.getStartPoint());
-            skeleton.set(skeleton.size() - 1, adjustJoint(joint, leftCurve, rightCurve));
+            skeleton.set(skeleton.size() - 1, adjustJoint(joint, leftCurve, rightCurve, offset));
           }
         }
 
@@ -335,7 +337,8 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
           if (joint.getEndPoint().equals(Vector2D.NaN)) {
             skeleton.add(joint);
           } else {
-            skeleton.add(adjustJoint(joint, skeleton.get(skeleton.size() - 1), skeleton.get(0)));
+            skeleton.add(adjustJoint(joint, skeleton.get(skeleton.size() - 1),
+                skeleton.get(0),offset));
           }
         }
       }
@@ -343,7 +346,15 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
     }
   }
 
-  private void applyContour() {
+  /**
+   * Applies contour by given weight and roundness control values.
+   *
+   * @param weightControl weight control value from 0 to 1
+   * @param roundnessControl roundness control value from 0 to 1
+   */
+  public void applyContour(double weightControl, double roundnessControl) {
+    double weight = weightControl - .5;
+    double roundness = roundnessControl;
     contours = new ArrayList<>();
     for (ArrayList<BezierCurve> curves : skeletons) {
       ArrayList<BezierCurve> newCurves = new ArrayList<>();
@@ -354,14 +365,18 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
         newCurves.add(curve);
       }
       double delta = WEIGHT_DEFAULT
-          + (WEIGHT_DEFAULT - 1) * (FeatureController.getInstance().getWeight() - .5);
-      double roundness = FeatureController.getInstance().getRoundness();
+          + (WEIGHT_DEFAULT - 1) * weight;
       contours.add(BezierCurveUtils.stroke(newCurves, delta, roundness));
     }
   }
 
-  private void applyWidth() {
-    double width = (WIDTH_MAX - WIDTH_MIN) * FeatureController.getInstance().getWidth() + WIDTH_MIN;
+  /**
+   * Applies width by given width control value.
+   *
+   * @param widthControl width control value from 0 to 1
+   */
+  public void applyWidth(double widthControl) {
+    double width = (WIDTH_MAX - WIDTH_MIN) * widthControl + WIDTH_MIN;
     double totalWidth = (HangulCharacter.ORIGIN_REGION.getMaxX()
         - HangulCharacter.ORIGIN_REGION.getMinX()) * width;
     double widthCenter = HangulCharacter.ORIGIN_REGION.getMaxX()
@@ -435,9 +450,10 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
 
   @Override
   public void onFeatureChange() {
-    applyCurve();
-    applyWidth();
-    applyContour();
+    applyCurve(FeatureController.getInstance().getCurve());
+    applyWidth(FeatureController.getInstance().getWidth());
+    applyContour(FeatureController.getInstance().getWeight(),
+        FeatureController.getInstance().getRoundness());
   }
 
   @Override
