@@ -17,10 +17,13 @@ import java.util.Arrays;
 public class BezierCurve extends ParametricPolynomialCurve {
   private static final BezierCurveOffsetMethodType DEFAULT_OFFSET_METHOD =
       BezierCurveOffsetMethodType.TillerHanson;
+  private static final Vector2D DEFAULT_OFFSET_VECTOR = new Vector2D(1, 1);
 
   private Vector2D[] points;
   private int order;
   private BezierCurveOffsetMethodType offsetMethod;
+  private Vector2D offsetVector = DEFAULT_OFFSET_VECTOR;
+  private Vector2D endOffsetVector;
 
   /**
    * Creates a new Bezier curve with given controlling points and sets a default offset method.
@@ -269,6 +272,56 @@ public class BezierCurve extends ParametricPolynomialCurve {
   }
 
   /**
+   * Returns the offset vector of the Bezier curve.
+   *
+   * @return the offset vector of the Bezier curve
+   */
+  public Vector2D getOffsetVector() {
+    return offsetVector;
+  }
+
+  /**
+   * Sets the offset vector of the Bezier curve.
+   *
+   * @param offsetVector the offset vector
+   */
+  public void setOffsetVector(Vector2D offsetVector) {
+    this.offsetVector = offsetVector;
+  }
+
+  /**
+   * Returns the end offset vector of the Bezier curve.
+   *
+   * @return the end offset vector of the Bezier curve
+   */
+  public Vector2D getEndOffsetVector() {
+    return endOffsetVector;
+  }
+
+  /**
+   * Sets the end offset vector of the Bezier curve.
+   *
+   * @param offsetVector the offset vector
+   */
+  public void setEndOffsetVector(Vector2D offsetVector) {
+    this.endOffsetVector = offsetVector;
+  }
+
+  /**
+   * Returns the offset vector for a point at the given index.
+   *
+   * @param index an index of point
+   * @return the offset vector
+   */
+  public Vector2D getOffsetVector(int index) {
+    if (endOffsetVector == null) {
+      return offsetVector;
+    }
+    return offsetVector.scalarMultiply((order - index) / (double) order)
+        .add(index / (double) order, endOffsetVector);
+  }
+
+  /**
    * Returns whether every points are collapsed or not.
    *
    * @return true if every points are collapsed, false otherwise
@@ -308,7 +361,14 @@ public class BezierCurve extends ParametricPolynomialCurve {
       points[0][i] = beta[i][0];
       points[1][i] = beta[order - i][i];
     }
-    return new BezierCurve[] {new BezierCurve(points[0]), new BezierCurve(points[1])};
+    BezierCurve[] curves = new BezierCurve[] {
+        new BezierCurve(points[0]),
+        new BezierCurve(points[1])
+    };
+    for (BezierCurve curve : curves) {
+      curve.setOffsetVector(offsetVector);
+    }
+    return curves;
   }
 
   /**
@@ -356,17 +416,71 @@ public class BezierCurve extends ParametricPolynomialCurve {
   public BezierCurve reverse() {
     Vector2D[] points = getPoints();
     ArrayUtils.reverse(points);
-    return new BezierCurve(points);
+    BezierCurve curve = new BezierCurve(points);
+    curve.setOffsetVector(offsetVector);
+    return curve;
   }
 
   @Override
   public BezierCurve clone() {
     BezierCurve curve = new BezierCurve(points, offsetMethod);
+    curve.setOffsetVector(offsetVector);
     return curve;
   }
 
   @Override
   public String toString() {
     return "Bezier Curve of order " + order + ": " + Arrays.toString(points);
+  }
+
+  public static class Builder {
+    private Vector2D[] points;
+    private Vector2D offsetVector;
+    private Vector2D endOffsetVector;
+
+    /**
+     * Sets the points.
+     *
+     * @param points points
+     * @return this builder, useful for chaining
+     */
+    public Builder setPoints(Vector2D[] points) {
+      this.points = points;
+      return this;
+    }
+
+    /**
+     * Sets the offset vector.
+     *
+     * @param offsetVector offset vector
+     * @return this builder, useful for chaining
+     */
+    public Builder setOffsetVector(Vector2D offsetVector) {
+      this.offsetVector = offsetVector;
+      return this;
+    }
+
+    /**
+     * Sets the end offset vector.
+     *
+     * @param endOffsetVector end offset vector
+     * @return this builder, useful for chaining
+     */
+    public Builder setEndOffsetVector(Vector2D endOffsetVector) {
+      this.endOffsetVector = endOffsetVector;
+      return this;
+    }
+
+    /**
+     * Build the {@link BezierCurve} after options have been set.
+     *
+     * @return the newly constructed {@link BezierCurve} object
+     */
+    public BezierCurve build() {
+      BezierCurve curve = new BezierCurve(points);
+      curve.setOffsetVector(offsetVector);
+      curve.setEndOffsetVector(endOffsetVector);
+      return curve;
+    }
   }
 }
