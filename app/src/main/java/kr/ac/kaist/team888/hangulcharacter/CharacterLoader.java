@@ -2,6 +2,10 @@ package kr.ac.kaist.team888.hangulcharacter;
 
 import com.google.common.collect.ImmutableMap;
 
+import kr.ac.kaist.team888.util.HangulDecomposer;
+
+import java.util.ArrayList;
+
 
 /**
  * {@link HangulCharacter} subclass Loader.
@@ -207,5 +211,25 @@ public class CharacterLoader {
       }
     }
     return null;
+  }
+
+  /**
+   * Verify whether given character is drawable Hangul character.
+   *
+   * @param value value to check
+   * @return drawable
+   */
+  public boolean isDrawable(char value) {
+    if (Hangul.isHangul(value)) {
+      return true;
+    }
+
+    ArrayList<HangulCharacter> hanguls = HangulDecomposer.decompose(value);
+    for (HangulCharacter hangul : hanguls) {
+      if (hangul == null) {
+        return false;
+      }
+    }
+    return true;
   }
 }

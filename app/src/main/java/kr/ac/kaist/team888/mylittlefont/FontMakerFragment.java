@@ -17,7 +17,7 @@ import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
 
-import kr.ac.kaist.team888.hangulcharacter.Hangul;
+import kr.ac.kaist.team888.hangulcharacter.CharacterLoader;
 import kr.ac.kaist.team888.locator.Locator;
 import kr.ac.kaist.team888.util.FeatureController;
 import kr.ac.kaist.team888.util.ViewContainer;
@@ -86,7 +86,7 @@ public class FontMakerFragment extends Fragment {
         locators = new ArrayList<>();
         for (int i = 0; i < sequence.length(); i++) {
           char key = sequence.charAt(i);
-          if (Hangul.isHangul(key)) {
+          if (CharacterLoader.getInstance().isDrawable(key)) {
             if (charLocatorMap.containsKey(key)) {
               locators.add(charLocatorMap.get(key));
             } else {
