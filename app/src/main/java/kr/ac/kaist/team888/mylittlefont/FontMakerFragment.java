@@ -20,6 +20,7 @@ import android.widget.TextView;
 import kr.ac.kaist.team888.hangulcharacter.Hangul;
 import kr.ac.kaist.team888.locator.Locator;
 import kr.ac.kaist.team888.util.FeatureController;
+import kr.ac.kaist.team888.util.ViewContainer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -130,82 +131,115 @@ public class FontMakerFragment extends Fragment {
     });
     sizeControl.setProgress(DEFAULT_CONTROL_SIZE);
 
-    // Feature - width
-    final SeekBar widthControl = (SeekBar) view.getRootView().findViewById(R.id.widthControl);
-    widthControl.setProgress(DEFAULT_CONTROL_WIDTH);
-    widthControl.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-      @Override
-      public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-        FeatureController.getInstance().setWidth(progress / 100.0);
-      }
-
-      @Override
-      public void onStartTrackingTouch(SeekBar seekBar) { }
-
-      @Override
-      public void onStopTrackingTouch(SeekBar seekBar) { }
-    });
-
-    // Feature - curve
-    final SeekBar curveControl = (SeekBar) view.getRootView().findViewById(R.id.curveControl);
-    curveControl.setProgress(DEFAULT_CONTROL_CURVE);
-    curveControl.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-      @Override
-      public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-        FeatureController.getInstance().setCurve(progress / 100.0);
-      }
-
-      @Override
-      public void onStartTrackingTouch(SeekBar seekBar) { }
-
-      @Override
-      public void onStopTrackingTouch(SeekBar seekBar) { }
-    });
-
-    // Feature - roundness
-    final SeekBar roundnessControl = (SeekBar) view.getRootView()
-        .findViewById(R.id.roundnessControl);
-    roundnessControl.setProgress(DEFAULT_CONTROL_ROUNDNESS);
-    roundnessControl.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-      @Override
-      public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-        FeatureController.getInstance().setRoundness(progress / 100.0);
-      }
-
-      @Override
-      public void onStartTrackingTouch(SeekBar seekBar) { }
-
-      @Override
-      public void onStopTrackingTouch(SeekBar seekBar) { }
-    });
-
-    // Feature - weight
-    final SeekBar weightControl = (SeekBar) view.getRootView().findViewById(R.id.weightControl);
-    weightControl.setProgress(DEFAULT_CONTROL_WEIGHT);
-    weightControl.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-      @Override
-      public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-        FeatureController.getInstance().setWeight(progress / 100.0);
-      }
-
-      @Override
-      public void onStartTrackingTouch(SeekBar seekBar) { }
-
-      @Override
-      public void onStopTrackingTouch(SeekBar seekBar) { }
-    });
-
     // Reset feature values
     Button resetBtn = (Button) view.getRootView().findViewById(R.id.resetBtn);
     resetBtn.setOnClickListener(new Button.OnClickListener() {
       @Override
       public void onClick(View view) {
-        weightControl.setProgress(DEFAULT_CONTROL_WEIGHT);
-        roundnessControl.setProgress(DEFAULT_CONTROL_ROUNDNESS);
-        curveControl.setProgress(DEFAULT_CONTROL_CURVE);
-        widthControl.setProgress(DEFAULT_CONTROL_WIDTH);
+        FeatureController controller = FeatureController.getInstance();
+        controller.setWeight(DEFAULT_CONTROL_WEIGHT / 100.0);
+        controller.setRoundness(DEFAULT_CONTROL_ROUNDNESS / 100.0);
+        controller.setCurve(DEFAULT_CONTROL_CURVE / 100.0);
+        controller.setWidth(DEFAULT_CONTROL_WIDTH / 100.0);
         sizeControl.setProgress(DEFAULT_CONTROL_SIZE);
       }
     });
+  }
+
+  @Override
+  public void onStart() {
+    super.onStart();
+    View view = getView();
+
+    // Feature - width
+    SeekBar widthControl = (SeekBar) view.findViewById(R.id.widthControl);
+    new SeekBarContainer(widthControl) {
+      @Override
+      public double getFeatureValue() {
+        return FeatureController.getInstance().getWidth();
+      }
+
+      @Override
+      public void setFeatureValue(double value) {
+        FeatureController.getInstance().setWidth(value);
+      }
+    };
+
+    // Feature - curve
+    SeekBar curveControl = (SeekBar) view.findViewById(R.id.curveControl);
+    new SeekBarContainer(curveControl) {
+      @Override
+      public double getFeatureValue() {
+        return FeatureController.getInstance().getCurve();
+      }
+
+      @Override
+      public void setFeatureValue(double value) {
+        FeatureController.getInstance().setCurve(value);
+      }
+    };
+
+    // Feature - roundness
+    SeekBar roundnessControl = (SeekBar) view.findViewById(R.id.roundnessControl);
+    new SeekBarContainer(roundnessControl) {
+      @Override
+      public double getFeatureValue() {
+        return FeatureController.getInstance().getRoundness();
+      }
+
+      @Override
+      public void setFeatureValue(double value) {
+        FeatureController.getInstance().setRoundness(value);
+      }
+    };
+
+    // Feature - weight
+    SeekBar weightControl = (SeekBar) view.findViewById(R.id.weightControl);
+    new SeekBarContainer(weightControl) {
+      @Override
+      public double getFeatureValue() {
+        return FeatureController.getInstance().getWeight();
+      }
+
+      @Override
+      public void setFeatureValue(double value) {
+        FeatureController.getInstance().setWeight(value);
+      }
+    };
+  }
+
+  private abstract class SeekBarContainer extends ViewContainer<SeekBar> {
+    public SeekBarContainer(SeekBar seekBar) {
+      super(seekBar);
+      view.setProgress((int) (getFeatureValue() * view.getMax()));
+      view.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        @Override
+        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+          if (fromUser) {
+            setFeatureValue(progress / (double) seekBar.getMax());
+          }
+        }
+
+        @Override
+        public void onStartTrackingTouch(SeekBar seekBar) { }
+
+        @Override
+        public void onStopTrackingTouch(SeekBar seekBar) { }
+      });
+    }
+
+    @Override
+    public void onFeatureChange() {
+      view.setProgress((int) (getFeatureValue() * view.getMax()));
+    }
+
+    @Override
+    public int getPriority() {
+      return 1;
+    }
+
+    public abstract double getFeatureValue();
+
+    public abstract void setFeatureValue(double value);
   }
 }
