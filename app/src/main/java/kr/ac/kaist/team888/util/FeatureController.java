@@ -10,12 +10,17 @@ public class FeatureController {
   private Comparator<WeakReference> comparator = new Comparator<WeakReference>() {
     @Override
     public int compare(WeakReference o1, WeakReference o2) {
-      if (o1.get() == null || o2.get() == null) {
+      if (o1.get() == o2.get()) {
+        return 0;
+      }
+      if (o1.get() == null) {
         return -1;
       }
-
-      return ((OnFeatureChangeListener)(o1.get())).getPriority()
-          - ((OnFeatureChangeListener)(o2.get())).getPriority();
+      if (o2.get() == null) {
+        return 1;
+      }
+      return ((OnFeatureChangeListener) o1.get()).getPriority()
+          - ((OnFeatureChangeListener) o2.get()).getPriority();
     }
   };
 
