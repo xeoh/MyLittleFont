@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.SeekBar;
@@ -24,6 +25,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class FontMakerFragment extends Fragment {
+  private static final int DEFAULT_CONTROL_SIZE = 25;
+  private static final int DEFAULT_CONTROL_WIDTH = 50;
+  private static final int DEFAULT_CONTROL_CURVE = 0;
+  private static final int DEFAULT_CONTROL_ROUNDNESS = 0;
+  private static final int DEFAULT_CONTROL_WEIGHT = 50;
+
   private FontCanvasView fontCanvasView;
   private EditText sampleTextInput;
   private String drawingText;
@@ -103,7 +110,7 @@ public class FontMakerFragment extends Fragment {
 
     final TextView fontSizeText = (TextView) view.getRootView().findViewById(R.id.fontSizeText);
 
-    SeekBar sizeControl = (SeekBar) view.getRootView().findViewById(R.id.fontSizeControl);
+    final SeekBar sizeControl = (SeekBar) view.getRootView().findViewById(R.id.fontSizeControl);
     sizeControl.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
       @Override
       public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -121,12 +128,27 @@ public class FontMakerFragment extends Fragment {
 
       }
     });
-    sizeControl.setProgress(25);
+    sizeControl.setProgress(DEFAULT_CONTROL_SIZE);
 
+    // Feature - width
+    final SeekBar widthControl = (SeekBar) view.getRootView().findViewById(R.id.widthControl);
+    widthControl.setProgress(DEFAULT_CONTROL_WIDTH);
+    widthControl.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+      @Override
+      public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+        FeatureController.getInstance().setWidth(progress / 100.0);
+      }
+
+      @Override
+      public void onStartTrackingTouch(SeekBar seekBar) { }
+
+      @Override
+      public void onStopTrackingTouch(SeekBar seekBar) { }
+    });
 
     // Feature - curve
-    SeekBar curveControl = (SeekBar) view.getRootView().findViewById(R.id.curveControl);
-    curveControl.setProgress(0);
+    final SeekBar curveControl = (SeekBar) view.getRootView().findViewById(R.id.curveControl);
+    curveControl.setProgress(DEFAULT_CONTROL_CURVE);
     curveControl.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
       @Override
       public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -141,8 +163,9 @@ public class FontMakerFragment extends Fragment {
     });
 
     // Feature - roundness
-    SeekBar roundnessControl = (SeekBar) view.getRootView().findViewById(R.id.roundnessControl);
-    roundnessControl.setProgress(0);
+    final SeekBar roundnessControl = (SeekBar) view.getRootView()
+        .findViewById(R.id.roundnessControl);
+    roundnessControl.setProgress(DEFAULT_CONTROL_ROUNDNESS);
     roundnessControl.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
       @Override
       public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -157,8 +180,8 @@ public class FontMakerFragment extends Fragment {
     });
 
     // Feature - weight
-    SeekBar weightControl = (SeekBar) view.getRootView().findViewById(R.id.weightControl);
-    weightControl.setProgress(50);
+    final SeekBar weightControl = (SeekBar) view.getRootView().findViewById(R.id.weightControl);
+    weightControl.setProgress(DEFAULT_CONTROL_WEIGHT);
     weightControl.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
       @Override
       public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -172,20 +195,17 @@ public class FontMakerFragment extends Fragment {
       public void onStopTrackingTouch(SeekBar seekBar) { }
     });
 
-    // Feature - width
-    SeekBar widthControl = (SeekBar) view.getRootView().findViewById(R.id.widthControl);
-    widthControl.setProgress(50);
-    widthControl.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+    // Reset feature values
+    Button resetBtn = (Button) view.getRootView().findViewById(R.id.resetBtn);
+    resetBtn.setOnClickListener(new Button.OnClickListener() {
       @Override
-      public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-        FeatureController.getInstance().setWidth(progress / 100.0);
+      public void onClick(View view) {
+        weightControl.setProgress(DEFAULT_CONTROL_WEIGHT);
+        roundnessControl.setProgress(DEFAULT_CONTROL_ROUNDNESS);
+        curveControl.setProgress(DEFAULT_CONTROL_CURVE);
+        widthControl.setProgress(DEFAULT_CONTROL_WIDTH);
+        sizeControl.setProgress(DEFAULT_CONTROL_SIZE);
       }
-
-      @Override
-      public void onStartTrackingTouch(SeekBar seekBar) { }
-
-      @Override
-      public void onStopTrackingTouch(SeekBar seekBar) { }
     });
   }
 }
