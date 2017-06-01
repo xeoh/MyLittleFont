@@ -175,18 +175,15 @@ public enum Hangul {
   }
 
   /**
-   * Check whether given character is Hangul or not.
+   * Check whether given character is single Hangul character or not.
+   *
+   * <p> Giving ㄲ,ㅏ,ㅢ ... returns true. However return false when a,b,c,...,가,나,... is given
    *
    * @param value value to check
    * @return true when given value is Hangul otherwise false
    */
   public static boolean isHangul(char value) {
-    if (0xAC00 <= value && value <= 0xD7AF) {
-      return true;
-    } else if (0x3131 <= value && value <= 0x3163) {
-      return true;
-    }
-    return false;
+    return fromInt(value) != NONE;
   }
 
   @Override
