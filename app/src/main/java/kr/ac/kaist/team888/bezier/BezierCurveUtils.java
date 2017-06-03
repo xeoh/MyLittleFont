@@ -27,8 +27,8 @@ public class BezierCurveUtils {
    * @return a stroked contour in the form of a sequence of Bezier curves
    */
   public static ArrayList<BezierCurve> stroke(ArrayList<BezierCurve> curves,
-                                              double delta, double roundness) {
-    return stroke(curves, DEFAULT_OFFSET_METHOD, delta, roundness);
+                                              double delta, double roundness, double contrast) {
+    return stroke(curves, DEFAULT_OFFSET_METHOD, delta, roundness, contrast);
   }
 
   /**
@@ -44,10 +44,10 @@ public class BezierCurveUtils {
    */
   public static ArrayList<BezierCurve> stroke(ArrayList<BezierCurve> curves,
                                               BezierCurveOffsetMethodType offsetMethod,
-                                              double delta, double roundness) {
+                                              double delta, double roundness, double contrast) {
     switch (offsetMethod) {
       case TillerHanson:
-        return OffsetTillerHanson.stroke(curves, delta, roundness);
+        return OffsetTillerHanson.stroke(curves, delta, roundness, contrast);
       default:
         return null;
     }

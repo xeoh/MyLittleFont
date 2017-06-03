@@ -31,6 +31,7 @@ public class FeatureController {
   private double curve = FontItem.DEFAULT_CONTROLS.getCurve();
   private double roundness = FontItem.DEFAULT_CONTROLS.getRoundness();
   private double weight = FontItem.DEFAULT_CONTROLS.getWeight();
+  private double contrast = FontItem.DEFAULT_CONTROLS.getContrast();
   private double width = FontItem.DEFAULT_CONTROLS.getWidth();
   private double flattening = FontItem.DEFAULT_CONTROLS.getFlattening();
   private double gap = DEFAULT_GAP;
@@ -154,6 +155,25 @@ public class FeatureController {
   }
 
   /**
+   * Getter of contrast value.
+   *
+   * @return weight value
+   */
+  public double getContrast() {
+    return contrast;
+  }
+
+  /**
+   * Setter of contrast value.
+   *
+   * @param contrast weight value
+   */
+  public void setContrast(double contrast) {
+    this.contrast = contrast;
+    onFeatureChange();
+  }
+
+  /**
    * Getter gap value.
    *
    * <p> Space is proportional value. If gap is 1, then gap between letter is same
@@ -231,6 +251,7 @@ public class FeatureController {
   public void setFeatures(FontItem fontItem) {
     curve = fontItem.getCurve();
     weight = fontItem.getWeight();
+    contrast = fontItem.getContrast();
     roundness = fontItem.getRoundness();
     width = fontItem.getWidth();
     onFeatureChange();
