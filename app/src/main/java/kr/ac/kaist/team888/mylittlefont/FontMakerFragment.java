@@ -1,8 +1,12 @@
 package kr.ac.kaist.team888.mylittlefont;
 
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -22,10 +26,15 @@ import kr.ac.kaist.team888.locator.Locator;
 import kr.ac.kaist.team888.util.FeatureController;
 import kr.ac.kaist.team888.util.ViewContainer;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 
 public class FontMakerFragment extends Fragment {
+  private static final String DEFAULT_FILE_PATH = "/MyLittleFont/";
   private static final int DEFAULT_CONTROL_SIZE = 25;
 
   private FontCanvasView fontCanvasView;
@@ -134,6 +143,46 @@ public class FontMakerFragment extends Fragment {
       public void onClick(View buttonView) {
         FeatureController.getInstance().setDefault();
         sizeControl.setProgress(DEFAULT_CONTROL_SIZE);
+      }
+    });
+
+    Button exportPngBtn = (Button) view.getRootView().findViewById(R.id.export_png);
+    exportPngBtn.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        Calendar cacalendar = Calendar.getInstance();
+        String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+            + DEFAULT_FILE_PATH + String.format("%d%d%d_%d%d%d.png",
+            cacalendar.get(Calendar.YEAR),
+            cacalendar.get(Calendar.MONTH),
+            cacalendar.get(Calendar.DATE),
+            cacalendar.get(Calendar.HOUR),
+            cacalendar.get(Calendar.MINUTE),
+            cacalendar.get(Calendar.SECOND));
+
+        try {
+          Bitmap bitmap = fontCanvasView.getBitmap();
+
+          AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+
+          File pngFile = new File(path);
+          FileOutputStream fileOutputStream = new FileOutputStream(pngFile);
+          bitmap.compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream);
+          fileOutputStream.close();
+          builder.setMessage(String.format("Save file: %s", pngFile.getName()));
+
+          AlertDialog dialog = builder.create();
+          dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface dialog) {
+              fontCanvasView.invalidate();
+            }
+          });
+
+          dialog.show();
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
       }
     });
   }
