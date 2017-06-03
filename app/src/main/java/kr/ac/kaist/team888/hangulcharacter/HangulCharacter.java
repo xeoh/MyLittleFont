@@ -20,6 +20,7 @@ import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 
 /**
  * Abstract Class for each individual Hangul characters.
@@ -27,6 +28,7 @@ import java.util.Collection;
 public abstract class HangulCharacter implements FeatureController.OnFeatureChangeListener {
   private static final String NO_DATA_ERROR = "No Json Data for character \'%s\'";
   public static final Region ORIGIN_REGION = new Region(0, 940, -200, 800);
+  private static final double DEFAULT_OFFSET = 32;
   private static final double X_OFFSET = 35;
   private static final double Y_OFFSET = 30;
   private static final int PRIORITY = 0;
@@ -42,6 +44,8 @@ public abstract class HangulCharacter implements FeatureController.OnFeatureChan
   private Region region;
   protected JsonObject data;
 
+  private final HashMap<Collection<Vector2D>, Vector2D> offsetVectorMap = new HashMap<>();
+
   /**
    * Super class constructor.
    *
@@ -56,7 +60,7 @@ public abstract class HangulCharacter implements FeatureController.OnFeatureChan
       return;
     }
 
-    // Parse points data from Json file
+    // Parse points and feature data from Json file
     Type collectionType = new TypeToken<Collection<Collection<Collection<Vector2D>>>>(){}.getType();
     GsonBuilder gson = new GsonBuilder();
     gson.registerTypeAdapter(new TypeToken<Collection<Vector2D>>(){}.getType(),
@@ -64,8 +68,17 @@ public abstract class HangulCharacter implements FeatureController.OnFeatureChan
           @Override
           public Collection<Vector2D> deserialize(JsonElement json, Type typeOfT,
                                                   JsonDeserializationContext context) {
-            return new Gson().fromJson(json.getAsJsonObject().getAsJsonArray("points"),
-                new TypeToken<Collection<Vector2D>>(){}.getType());
+            Collection<Vector2D> points = new Gson().fromJson(json.getAsJsonObject()
+                    .getAsJsonArray("points"), new TypeToken<Collection<Vector2D>>(){}.getType());
+            JsonObject weight = json.getAsJsonObject().getAsJsonObject("weight");
+            if (weight != null) {
+              Vector2D offsetVector = new Vector2D(
+                  weight.getAsJsonPrimitive("horizontal").getAsDouble() / DEFAULT_OFFSET,
+                  weight.getAsJsonPrimitive("vertical").getAsDouble() / DEFAULT_OFFSET
+              );
+              offsetVectorMap.put(points, offsetVector);
+            }
+            return points;
           }});
 
     skeletonsPoints = gson.create().fromJson(data.getAsJsonArray(SKELETONS_KEY), collectionType);
@@ -114,6 +127,12 @@ public abstract class HangulCharacter implements FeatureController.OnFeatureChan
               points.get(points.size() - 2),
               points.get(points.size() - 1)
           }));
+        }
+        Vector2D offsetVector = offsetVectorMap.get(points);
+        if (offsetVector != null) {
+          for (BezierCurve curve : segment) {
+            curve.setOffsetVector(offsetVector);
+          }
         }
         skeletonsData.get(i).add(segment);
       }

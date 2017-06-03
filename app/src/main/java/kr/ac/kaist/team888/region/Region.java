@@ -133,8 +133,11 @@ public class Region {
     for (int i = 0; i < transformedPoints.length; i++) {
       transformedPoints[i] = (transformVector2D(dst, curve.getPoint(i)));
     }
-    BezierCurve transformedCurve = new BezierCurve(transformedPoints);
-    return transformedCurve;
+    return new BezierCurve.Builder()
+        .setPoints(transformedPoints)
+        .setOffsetVector(curve.getOffsetVector())
+        .setEndOffsetVector(curve.getEndOffsetVector())
+        .build();
   }
 
   /**

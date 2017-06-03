@@ -274,27 +274,34 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
     if (Math.abs(cross) < CURVE_TOLERANCE) {
       if (Math.abs(joint.getEndPoint().subtract(joint.getStartPoint()).normalize()
           .dotProduct(endVector.normalize()) - 1) < CURVE_TOLERANCE) {
-        return new BezierCurve(new Vector2D[] {
-            joint.getStartPoint(),
-            joint.getEndPoint()
-        });
+        return new BezierCurve.Builder()
+            .setPoints(new Vector2D[] {joint.getStartPoint(), joint.getEndPoint()})
+            .setOffsetVector(joint.getOffsetVector())
+            .setEndOffsetVector(joint.getEndOffsetVector())
+            .build();
       }
-      return new BezierCurve(new Vector2D[] {
-          joint.getStartPoint(),
-          joint.getStartPoint().add(offset, startVector.normalize()),
-          joint.getEndPoint().add(offset, startVector.normalize()),
-          joint.getEndPoint()
-      });
+      return new BezierCurve.Builder()
+          .setPoints(new Vector2D[] {
+              joint.getStartPoint(),
+              joint.getStartPoint().add(offset, startVector.normalize()),
+              joint.getEndPoint().add(offset, startVector.normalize()),
+              joint.getEndPoint()})
+          .setOffsetVector(joint.getOffsetVector())
+          .setEndOffsetVector(joint.getEndOffsetVector())
+          .build();
     }
     double factor = (-joint.getStartPoint().getX() * endVector.getY()
         + joint.getStartPoint().getY() * endVector.getX()
         + joint.getEndPoint().getX() * endVector.getY()
         - joint.getEndPoint().getY() * endVector.getX()) / cross;
-    return new BezierCurve(new Vector2D[] {
-        joint.getStartPoint(),
-        joint.getStartPoint().add(factor, startVector),
-        joint.getEndPoint()
-    });
+    return new BezierCurve.Builder()
+        .setPoints(new Vector2D[] {
+            joint.getStartPoint(),
+            joint.getStartPoint().add(factor, startVector),
+            joint.getEndPoint()})
+        .setOffsetVector(joint.getOffsetVector())
+        .setEndOffsetVector(joint.getEndOffsetVector())
+        .build();
   }
 
   /**
@@ -365,6 +372,7 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
             BezierCurve joint = skeleton.get(skeleton.size() - 1);
             BezierCurve rightCurve = segment.get(0);
             joint.setEndPoint(rightCurve.getStartPoint());
+            joint.setEndOffsetVector(rightCurve.getOffsetVector());
             skeleton.set(skeleton.size() - 1, adjustJoint(joint, leftCurve, rightCurve, offset));
           }
         }
@@ -392,11 +400,13 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
               segmentData.get(segmentData.size() - 1).getEndPoint(),
               i == segments.size() - 1 ? skeleton.get(0).getStartPoint() : Vector2D.NaN
           });
+          joint.setOffsetVector(segment.get(segment.size() - 1).getOffsetVector());
           if (joint.getEndPoint().equals(Vector2D.NaN)) {
             skeleton.add(joint);
           } else {
-            skeleton.add(adjustJoint(joint, skeleton.get(skeleton.size() - 1),
-                skeleton.get(0),offset));
+            joint = adjustJoint(joint, skeleton.get(skeleton.size() - 1), skeleton.get(0), offset);
+            joint.setEndOffsetVector(skeleton.get(0).getOffsetVector());
+            skeleton.add(joint);
           }
         }
       }
