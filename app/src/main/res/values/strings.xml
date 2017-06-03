@@ -12,4 +12,10 @@
     <string name="feature_load">Load</string>
     <string name="feature_load_title">Load Saved Font</string>
     <string name="feature_load_cancel">Cancel</string>
+    <string name="feature_export">Export</string>
+    <string name="feature_export_name">Name</string>
+    <string name="feature_export_ok">Ok</string>
+    <string name="feature_export_cancel">Cancel</string>
+    <string name="feature_export_warning">Warning</string>
+    <string name="feature_export_already_in_progress">Exporting font is in progress. Would you cancle and export new font?</string>
 </resources>

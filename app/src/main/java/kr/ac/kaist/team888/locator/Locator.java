@@ -35,7 +35,12 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
   private static final double WIDTH_MAX = 1.3;
   private static final int PRIORITY = 1;
 
-  public static Region locatorRegion = new Region(HangulCharacter.ORIGIN_REGION.getMinX(),
+  public static Region globalLocatorRegion = new Region(HangulCharacter.ORIGIN_REGION.getMinX(),
+      HangulCharacter.ORIGIN_REGION.getMaxX(),
+      HangulCharacter.ORIGIN_REGION.getMinY(),
+      HangulCharacter.ORIGIN_REGION.getMaxY());
+
+  public Region locatorRegion = new Region(HangulCharacter.ORIGIN_REGION.getMinX(),
       HangulCharacter.ORIGIN_REGION.getMaxX(),
       HangulCharacter.ORIGIN_REGION.getMinY(),
       HangulCharacter.ORIGIN_REGION.getMaxY());
@@ -68,6 +73,28 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
     initialize();
 
     FeatureController.getInstance().registerOnFeatureChangeListener(this);
+  }
+
+  /**
+   * Constructs a locator object for given Hangul letter.
+   *
+   * <p>This method accepts a single Hangul letter and then composes and transforms each character
+   * of the letter to its right region by getting base region data of it.
+   *
+   * <p>If an input letter is not Hangul, all locator functionality will not work properly.
+   *
+   * @param letter a Hangul letter.
+   * @param registerFeatureChangeListener whether register this to {@link FeatureController}
+   */
+  public Locator(char letter, boolean registerFeatureChangeListener) {
+    characters = HangulDecomposer.decompose(letter);
+    calculateRegions();
+
+    initialize();
+
+    if (registerFeatureChangeListener) {
+      FeatureController.getInstance().registerOnFeatureChangeListener(this);
+    }
   }
 
   private void initialize() {
@@ -392,6 +419,25 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
     }
   }
 
+  /**
+   * Applies width by given width control value.
+   *
+   * @param widthControl width control value from 0 to 1
+   * @param global global change or not
+   */
+  public void applyWidth(double widthControl, boolean global) {
+    if (global) {
+      double width = (WIDTH_MAX - WIDTH_MIN) * widthControl + WIDTH_MIN;
+      double totalWidth = (HangulCharacter.ORIGIN_REGION.getMaxX()
+          - HangulCharacter.ORIGIN_REGION.getMinX()) * width;
+      double widthCenter = HangulCharacter.ORIGIN_REGION.getMaxX()
+          - HangulCharacter.ORIGIN_REGION.getMinX() / 2;
+      globalLocatorRegion.setMinX(widthCenter - totalWidth / 2);
+      globalLocatorRegion.setMaxX(widthCenter + totalWidth / 2);
+    }
+    applyWidth(widthControl);
+  }
+
   private void setPaths(Region canvasRegion, ArrayList<ArrayList<BezierCurve>> curvesSet,
                         ArrayList<Path> paths, boolean showPoints) {
     for (ArrayList<BezierCurve> curves : curvesSet) {
@@ -448,10 +494,19 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
     }
   }
 
+  /**
+   * Getter of contour.
+   *
+   * @return contour
+   */
+  public ArrayList<ArrayList<BezierCurve>> getContour() {
+    return contours;
+  }
+
   @Override
   public void onFeatureChange() {
     applyCurve(FeatureController.getInstance().getCurve());
-    applyWidth(FeatureController.getInstance().getWidth());
+    applyWidth(FeatureController.getInstance().getWidth(), true);
     applyContour(FeatureController.getInstance().getWeight(),
         FeatureController.getInstance().getRoundness());
   }
