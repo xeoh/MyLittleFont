@@ -279,6 +279,7 @@ public class FeatureController {
     roundness = fontItem.getRoundness();
     width = fontItem.getWidth();
     flattening = fontItem.getFlattening();
+    arise = fontItem.getArise();
     onFeatureChange();
   }
 
