@@ -1,6 +1,7 @@
 package kr.ac.kaist.team888.mylittlefont;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -218,6 +219,20 @@ public class FontCanvasView extends View implements FeatureController.OnFeatureC
     double inches = point / 72;
     double xdpi = getResources().getDisplayMetrics().xdpi;
     return (int)(inches * xdpi);
+  }
+
+  /**
+   * get view contents as Bitmap.
+   *
+   * @return bitmap
+   */
+  public Bitmap getBitmap() {
+    Bitmap imageBitmap = Bitmap.createBitmap(getWidth(),
+        getHeight(), Bitmap.Config.ARGB_8888);
+    Canvas canvas = new Canvas(imageBitmap);
+    draw(canvas);
+
+    return imageBitmap;
   }
 
   /**
