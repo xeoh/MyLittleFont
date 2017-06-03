@@ -221,7 +221,8 @@ public class BezierCurveUtils {
    * @param proportion double value, 0 <= range <= 1.
    * @return new BezierCurve
    */
-  public static BezierCurve interpolate(BezierCurve source, BezierCurve target, double proportion) {
+  public static BezierCurve interpolate(BezierCurve source, BezierCurve target, double proportion)
+          throws IllegalArgumentException{
     Vector2D[] sourcePoints = source.getPoints();
     Vector2D[] targetPoints = target.getPoints();
 
@@ -230,10 +231,9 @@ public class BezierCurveUtils {
     }
 
     Vector2D[] resultPoints = new Vector2D[sourcePoints.length];
-    // Formula: (target - source) * proportion + source
+    // Formula: target * proportion + (1 - proportion) * source
     for (int p = 0; p < sourcePoints.length; p++) {
-      Vector2D diff = targetPoints[p].subtract(sourcePoints[p]).scalarMultiply(proportion);
-      resultPoints[p] = sourcePoints[p].add(diff);
+      resultPoints[p] = targetPoints[p].scalarMultiply(proportion).add(1 - proportion, sourcePoints[p]);
     }
 
     return new BezierCurve(resultPoints);
