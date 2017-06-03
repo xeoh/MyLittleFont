@@ -158,8 +158,10 @@ public class FontCanvasView extends View implements FeatureController.OnFeatureC
     regions.clear();
 
     // ratio = (x2 - x1) / (y2 - y1)
-    double regionRatio = (Locator.locatorRegion.getMaxX() - Locator.locatorRegion.getMinX())
-        / (Locator.locatorRegion.getMaxY() - Locator.locatorRegion.getMinY());
+    double regionRatio = (Locator.globalLocatorRegion.getMaxX()
+        - Locator.globalLocatorRegion.getMinX())
+        / (Locator.globalLocatorRegion.getMaxY()
+        - Locator.globalLocatorRegion.getMinY());
 
     // getting one region's size
     double gap = FeatureController.getInstance().getGap();

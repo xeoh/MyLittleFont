@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/export_name_title"
+        android:layout_width="100dp"
+        android:layout_height="50dp"
+        android:text="Name:"
+        android:gravity="center"
+        android:textSize="20sp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"/>
+
+    <EditText
+        android:id="@+id/export_name"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:textSize="20sp"
+        android:layout_alignParentTop="true"
+        android:layout_toEndOf="@id/export_name_title"/>
+    
+    <RadioGroup
+        android:id="@+id/export_option"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_below="@id/export_name">
+
+        <RadioButton
+            android:id="@+id/export_all"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="All"/>
+
+        <RadioButton
+            android:id="@+id/export_partial"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Partial"
+            android:checked="true"/>
+
+    </RadioGroup>
+
+</RelativeLayout>
