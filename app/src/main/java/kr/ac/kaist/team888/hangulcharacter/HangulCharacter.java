@@ -31,9 +31,14 @@ public abstract class HangulCharacter implements FeatureController.OnFeatureChan
   private static final double Y_OFFSET = 30;
   private static final int PRIORITY = 0;
 
+  private static final String FLATTEN_KEY = "flatten";
   private static final String SKELETONS_KEY = "skeletons";
+  private ArrayList<ArrayList<ArrayList<Vector2D>>> skeletonsPoints;
+  private ArrayList<ArrayList<ArrayList<Vector2D>>> flattenPoints;
+
   private ArrayList<ArrayList<ArrayList<BezierCurve>>> skeletonsData;
   private ArrayList<ArrayList<ArrayList<BezierCurve>>> skeletons;
+
   private Region region;
   protected JsonObject data;
 
@@ -62,15 +67,29 @@ public abstract class HangulCharacter implements FeatureController.OnFeatureChan
             return new Gson().fromJson(json.getAsJsonObject().getAsJsonArray("points"),
                 new TypeToken<Collection<Vector2D>>(){}.getType());
           }});
-    ArrayList<ArrayList<ArrayList<Vector2D>>> skeletonsPoints = gson.create()
-        .fromJson(data.getAsJsonArray(SKELETONS_KEY), collectionType);
+
+    skeletonsPoints = gson.create().fromJson(data.getAsJsonArray(SKELETONS_KEY), collectionType);
+
+    if (data.getAsJsonArray(FLATTEN_KEY) != null) {
+      flattenPoints = gson.create().fromJson(data.getAsJsonArray(FLATTEN_KEY), collectionType);
+    }
+
+    FeatureController.getInstance().registerOnFeatureChangeListener(this);
+  }
+
+  private void calculateSkeletons(int currentIndex, ArrayList<HangulCharacter> characters) {
+    ArrayList<ArrayList<ArrayList<Vector2D>>> selectedPoints = skeletonsPoints;
+
+    if (flattenPoints != null && isFlatable(currentIndex, characters)) {
+      selectedPoints = flattenPoints;
+    }
 
     // Construct the skeletons data
     skeletonsData = new ArrayList<>();
-    for (int i = 0; i < skeletonsPoints.size(); i++) {
+    for (int i = 0; i < selectedPoints.size(); i++) {
       skeletonsData.add(i, new ArrayList<ArrayList<BezierCurve>>());
-      for (int j = 0; j < skeletonsPoints.get(i).size(); j++) {
-        ArrayList<Vector2D> points = skeletonsPoints.get(i).get(j);
+      for (int j = 0; j < selectedPoints.get(i).size(); j++) {
+        ArrayList<Vector2D> points = selectedPoints.get(i).get(j);
         // Validate the points size
         if (points.size() <= 1) {
           continue;
@@ -111,13 +130,9 @@ public abstract class HangulCharacter implements FeatureController.OnFeatureChan
         }
       }
     }
-
-    region = calculateRegion();
-
-    FeatureController.getInstance().registerOnFeatureChangeListener(this);
   }
 
-  private Region calculateRegion() {
+  private void calculateRegion() {
     double minX = ORIGIN_REGION.getMaxX();
     double maxX = ORIGIN_REGION.getMinX();
     double minY = ORIGIN_REGION.getMaxY();
@@ -136,11 +151,15 @@ public abstract class HangulCharacter implements FeatureController.OnFeatureChan
 
     // Case for an empty list
     if (minX > maxX || minY > maxY) {
-      return new Region(ORIGIN_REGION.getMinX(), ORIGIN_REGION.getMaxX(),
+      region = new Region(ORIGIN_REGION.getMinX(), ORIGIN_REGION.getMaxX(),
           ORIGIN_REGION.getMinY(), ORIGIN_REGION.getMaxY());
     }
 
-    return new Region(minX - X_OFFSET, maxX + X_OFFSET, minY - Y_OFFSET, maxY + Y_OFFSET);
+    region = new Region(minX - X_OFFSET, maxX + X_OFFSET, minY - Y_OFFSET, maxY + Y_OFFSET);
+  }
+
+  public boolean isFlatable(int currentIndex, ArrayList<HangulCharacter> characters) {
+    return false;
   }
 
   /**
@@ -148,7 +167,9 @@ public abstract class HangulCharacter implements FeatureController.OnFeatureChan
    *
    * @return skeletons which is composed of 2D {@link kr.ac.kaist.team888.bezier.BezierCurve} array.
    */
-  public ArrayList<ArrayList<ArrayList<BezierCurve>>> getSkeletons() {
+  public ArrayList<ArrayList<ArrayList<BezierCurve>>> getSkeletons(
+          int currentIndex, ArrayList<HangulCharacter> characters) {
+    calculateSkeletons(currentIndex, characters);
     return skeletons;
   }
 
@@ -157,7 +178,9 @@ public abstract class HangulCharacter implements FeatureController.OnFeatureChan
    *
    * @return the region of the character.
    */
-  public Region getRegion() {
+  public Region getRegion(int currentIndex, ArrayList<HangulCharacter> characters) {
+    calculateSkeletons(currentIndex, characters);
+    calculateRegion();
     return region;
   }
 

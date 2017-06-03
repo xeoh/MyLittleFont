@@ -184,4 +184,58 @@ public class BezierCurveUtils {
     return sign * value;
   }
 
+  /**
+   * Returns true when both lengths of source(A) & target(B) are same. (Each Vector2D of A compared
+   * with Vector2D of B at same index)
+   * Otherwise return false.
+   *
+   * @param source The BezierCurve which be a criterion.
+   * @param target A BezierCurve which will be compared with source.
+   * @return boolean.
+   */
+  public static boolean comparePoints(BezierCurve source, BezierCurve target) {
+    Vector2D[] sourcePoints = source.getPoints();
+    Vector2D[] targetPoints = target.getPoints();
+
+    if (sourcePoints.length != targetPoints.length) {
+      return false;
+    }
+
+    for (int p = 0; p < sourcePoints.length; p++) {
+      if (sourcePoints[p] != targetPoints[p]) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * Return new BezierCurve between source(A) and target(B).
+   * If proportion is 0, return same BezierCurve with A.
+   * If proportion is 1, return same BezierCurve with B.
+   * Otherwise, return a BezierCurve between A & B.
+   *
+   * @param source The BezierCurve which be a criterion.
+   * @param target A BezierCurve has maximum interpolate points.
+   * @param proportion double value, 0 <= range <= 1.
+   * @return new BezierCurve
+   */
+  public static BezierCurve interpolate(BezierCurve source, BezierCurve target, double proportion)
+          throws IllegalArgumentException{
+    Vector2D[] sourcePoints = source.getPoints();
+    Vector2D[] targetPoints = target.getPoints();
+
+    if (sourcePoints.length != targetPoints.length) {
+      throw new IllegalArgumentException();
+    }
+
+    Vector2D[] resultPoints = new Vector2D[sourcePoints.length];
+    // Formula: target * proportion + (1 - proportion) * source
+    for (int p = 0; p < sourcePoints.length; p++) {
+      resultPoints[p] = targetPoints[p].scalarMultiply(proportion).add(1 - proportion, sourcePoints[p]);
+    }
+
+    return new BezierCurve(resultPoints);
+  }
 }

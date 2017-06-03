@@ -16,6 +16,7 @@ public class FontItem {
   private static final double DEFAULT_CONTROL_ROUNDNESS = 0;
   private static final double DEFAULT_CONTROL_WEIGHT = .5;
   private static final double DEFAULT_CONTROL_WIDTH = .5;
+  private static final double DEFAULT_CONTROL_FLATTENING = 0;
 
   /**
    * Initial font with default feature values.
@@ -23,7 +24,8 @@ public class FontItem {
   public static final FontItem DEFAULT_CONTROLS = new FontItem(
       -1, null, null,
       DEFAULT_CONTROL_CURVE, DEFAULT_CONTROL_ROUNDNESS,
-      DEFAULT_CONTROL_WEIGHT, DEFAULT_CONTROL_WIDTH
+      DEFAULT_CONTROL_WEIGHT, DEFAULT_CONTROL_WIDTH,
+      DEFAULT_CONTROL_FLATTENING
   );
 
   private int id;
@@ -33,9 +35,10 @@ public class FontItem {
   private double roundness;
   private double weight;
   private double width;
+  private double flattening;
 
   private FontItem(int id, String name, Date datetime,
-           double curve, double roundness, double weight, double width) {
+           double curve, double roundness, double weight, double width, double flattening) {
     this.id = id;
     this.name = name;
     this.datetime = datetime;
@@ -43,6 +46,7 @@ public class FontItem {
     this.roundness = roundness;
     this.weight = weight;
     this.width = width;
+    this.flattening = flattening;
   }
 
   /**
@@ -171,6 +175,24 @@ public class FontItem {
     this.width = width;
   }
 
+  /**
+   * Returns the flattening value of the font.
+   *
+   * @return the flattening value of the font
+   */
+  public double getFlattening() {
+    return flattening;
+  }
+
+  /**
+   * Sets the flattening of the font.
+   *
+   * @param flattening the flattening of the font
+   */
+  public void setFlattening(double flattening) {
+    this.flattening = flattening;
+  }
+
   public static class FontItemBuilder {
     private int id;
     private String name;
@@ -179,6 +201,7 @@ public class FontItem {
     private double roundness;
     private double weight;
     private double width;
+    private double flattening;
 
     /**
      * Sets the id.
@@ -258,12 +281,23 @@ public class FontItem {
     }
 
     /**
+     * Sets the flattening value.
+     *
+     * @param flattening the flattening value
+     * @return this builder, useful for chaining
+     */
+    public FontItemBuilder setFlattening(double flattening) {
+      this.flattening = flattening;
+      return this;
+    }
+
+    /**
      * Build the {@link FontItem} after options have been set.
      *
      * @return the newly constructed {@link FontItem} object
      */
     public FontItem build() {
-      return new FontItem(id, name, datetime, curve, roundness, weight, width);
+      return new FontItem(id, name, datetime, curve, roundness, weight, width, flattening);
     }
   }
 }
