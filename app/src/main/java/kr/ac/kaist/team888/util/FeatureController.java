@@ -34,6 +34,7 @@ public class FeatureController {
   private double contrast = FontItem.DEFAULT_CONTROLS.getContrast();
   private double width = FontItem.DEFAULT_CONTROLS.getWidth();
   private double flattening = FontItem.DEFAULT_CONTROLS.getFlattening();
+  private double arise = FontItem.DEFAULT_CONTROLS.getArise();
   private double gap = DEFAULT_GAP;
 
   /**
@@ -237,6 +238,29 @@ public class FeatureController {
    */
   public void setFlattening(double flattening) {
     this.flattening = flattening;
+    onFeatureChange();
+  }
+
+  /**
+   * Getter arise value.
+   *
+   * <p> Arise is proportional value. If arise is 1,
+   * {@link kr.ac.kaist.team888.locator.Locator} automatically
+   * computes arise position. If 0, fundamental position.
+   *
+   * @return arise value
+   */
+  public double getArise() {
+    return arise;
+  }
+
+  /**
+   * Setter arise value.
+   *
+   * @param arise arise value
+   */
+  public void setArise(double arise) {
+    this.arise = arise;
     onFeatureChange();
   }
 

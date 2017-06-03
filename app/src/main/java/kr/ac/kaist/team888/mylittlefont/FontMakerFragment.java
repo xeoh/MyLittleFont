@@ -275,6 +275,20 @@ public class FontMakerFragment extends Fragment {
         FeatureController.getInstance().setFlattening(value);
       }
     };
+
+    // Feature - arise
+    SeekBar ariseControl = (SeekBar) view.findViewById(R.id.ariseControl);
+    new SeekBarContainer(ariseControl) {
+      @Override
+      public double getFeatureValue() {
+        return FeatureController.getInstance().getArise();
+      }
+
+      @Override
+      public void setFeatureValue(double value) {
+        FeatureController.getInstance().setArise(value);
+      }
+    };
   }
 
   private abstract class SeekBarContainer extends ViewContainer<SeekBar> {

@@ -18,6 +18,7 @@ public class FontItem {
   private static final double DEFAULT_CONTROL_CONTRAST = .5;
   private static final double DEFAULT_CONTROL_WIDTH = .5;
   private static final double DEFAULT_CONTROL_FLATTENING = 0;
+  private static final double DEFAULT_CONTROL_ARISE = 0;
 
   /**
    * Initial font with default feature values.
@@ -26,7 +27,8 @@ public class FontItem {
       -1, null, null,
       DEFAULT_CONTROL_CURVE, DEFAULT_CONTROL_ROUNDNESS,
       DEFAULT_CONTROL_WEIGHT, DEFAULT_CONTROL_CONTRAST,
-      DEFAULT_CONTROL_WIDTH, DEFAULT_CONTROL_FLATTENING
+      DEFAULT_CONTROL_WIDTH, DEFAULT_CONTROL_FLATTENING,
+      DEFAULT_CONTROL_ARISE
   );
 
   private int id;
@@ -38,10 +40,11 @@ public class FontItem {
   private double contrast;
   private double width;
   private double flattening;
+  private double arise;
 
   private FontItem(int id, String name, Date datetime,
                    double curve, double roundness, double weight,
-                   double contrast, double width, double flattening) {
+                   double contrast, double width, double flattening, double arise) {
     this.id = id;
     this.name = name;
     this.datetime = datetime;
@@ -51,6 +54,7 @@ public class FontItem {
     this.contrast = contrast;
     this.width = width;
     this.flattening = flattening;
+    this.arise = arise;
   }
 
   /**
@@ -215,6 +219,24 @@ public class FontItem {
     this.flattening = flattening;
   }
 
+  /**
+   * Returns the arise value of the font.
+   *
+   * @return the arise value of the font
+   */
+  public double getArise() {
+    return arise;
+  }
+
+  /**
+   * Sets the flattening of the font.
+   *
+   * @param flattening the flattening of the font
+   */
+  public void setArise(double flattening) {
+    this.arise = arise;
+  }
+
   public static class FontItemBuilder {
     private int id;
     private String name;
@@ -225,6 +247,7 @@ public class FontItem {
     private double contrast;
     private double width;
     private double flattening;
+    private double arise;
 
     /**
      * Sets the id.
@@ -326,13 +349,24 @@ public class FontItem {
     }
 
     /**
+     * Sets the arise value.
+     *
+     * @param arise the arise value
+     * @return this builder, useful for chaining
+     */
+    public FontItemBuilder setArise(double arise) {
+      this.arise = arise;
+      return this;
+    }
+
+    /**
      * Build the {@link FontItem} after options have been set.
      *
      * @return the newly constructed {@link FontItem} object
      */
     public FontItem build() {
       return new FontItem(id, name, datetime, curve, roundness, weight,
-          contrast, width, flattening);
+          contrast, width, flattening, arise);
     }
   }
 }
