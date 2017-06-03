@@ -102,10 +102,10 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
 
     for (int i = 0; i < characters.size(); i++) {
       HangulCharacter character = characters.get(i);
-      Region baseRegion = character.getRegion();
+      Region baseRegion = character.getRegion(i, characters);
       Region targetRegion = regions.get(i);
 
-      for (ArrayList<ArrayList<BezierCurve>> skeleton : character.getSkeletons()) {
+      for (ArrayList<ArrayList<BezierCurve>> skeleton : character.getSkeletons(i, characters)) {
         ArrayList<ArrayList<BezierCurve>> newSkeletonData = new ArrayList<>();
         for (ArrayList<BezierCurve> segment : skeleton) {
           ArrayList<BezierCurve> newSegment = new ArrayList<>();
@@ -132,7 +132,7 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
       regions = gson.fromJson(baseLocatorData, collectionType);
     } else if (characters.size() == 1) {
       regions = new ArrayList<>();
-      regions.add(characters.get(0).getRegion());
+      regions.add(characters.get(0).getRegion(0, characters));
     } else {
       regions = new ArrayList<>();
     }
