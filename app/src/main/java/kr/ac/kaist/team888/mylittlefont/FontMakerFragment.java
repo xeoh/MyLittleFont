@@ -27,10 +27,6 @@ import java.util.HashMap;
 
 public class FontMakerFragment extends Fragment {
   private static final int DEFAULT_CONTROL_SIZE = 25;
-  private static final int DEFAULT_CONTROL_WIDTH = 50;
-  private static final int DEFAULT_CONTROL_CURVE = 0;
-  private static final int DEFAULT_CONTROL_ROUNDNESS = 0;
-  private static final int DEFAULT_CONTROL_WEIGHT = 50;
 
   private FontCanvasView fontCanvasView;
   private EditText sampleTextInput;
@@ -135,12 +131,8 @@ public class FontMakerFragment extends Fragment {
     Button resetBtn = (Button) view.getRootView().findViewById(R.id.resetBtn);
     resetBtn.setOnClickListener(new Button.OnClickListener() {
       @Override
-      public void onClick(View view) {
-        FeatureController controller = FeatureController.getInstance();
-        controller.setWeight(DEFAULT_CONTROL_WEIGHT / 100.0);
-        controller.setRoundness(DEFAULT_CONTROL_ROUNDNESS / 100.0);
-        controller.setCurve(DEFAULT_CONTROL_CURVE / 100.0);
-        controller.setWidth(DEFAULT_CONTROL_WIDTH / 100.0);
+      public void onClick(View buttonView) {
+        FeatureController.getInstance().setDefault();
         sizeControl.setProgress(DEFAULT_CONTROL_SIZE);
       }
     });

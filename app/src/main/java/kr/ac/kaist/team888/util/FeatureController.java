@@ -1,5 +1,7 @@
 package kr.ac.kaist.team888.util;
 
+import kr.ac.kaist.team888.mylittlefont.FontItem;
+
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,11 +26,13 @@ public class FeatureController {
     }
   };
 
-  private double curve = 0;
-  private double roundness = 0;
-  private double weight = .5;
-  private double gap = 0.1;
-  private double width = .5;
+  private static final double DEFAULT_GAP = .1;
+
+  private double curve = FontItem.DEFAULT_CONTROLS.getCurve();
+  private double roundness = FontItem.DEFAULT_CONTROLS.getRoundness();
+  private double weight = FontItem.DEFAULT_CONTROLS.getWeight();
+  private double width = FontItem.DEFAULT_CONTROLS.getWidth();
+  private double gap = DEFAULT_GAP;
 
   /**
    * Interface for listening change of hangul features.
@@ -190,5 +194,28 @@ public class FeatureController {
   public void setWidth(double width) {
     this.width = width;
     onFeatureChange();
+  }
+
+  /**
+   * Sets feature values as of the given font item in one swoop.
+   *
+   * <p>This method may be useful for changing more than one features at once
+   * because setting values one by one triggers lots of view updates and calculates.
+   *
+   * @param fontItem a font item to be set
+   */
+  public void setFeatures(FontItem fontItem) {
+    curve = fontItem.getCurve();
+    weight = fontItem.getWeight();
+    roundness = fontItem.getRoundness();
+    width = fontItem.getWidth();
+    onFeatureChange();
+  }
+
+  /**
+   * Sets feature values as the initial setting.
+   */
+  public void setDefault() {
+    setFeatures(FontItem.DEFAULT_CONTROLS);
   }
 }
