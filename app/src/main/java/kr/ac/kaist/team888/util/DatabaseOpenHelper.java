@@ -28,6 +28,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
   private static final String KEY_ROUNDNESS = "roundness";
   private static final String KEY_WEIGHT = "weight";
   private static final String KEY_WIDTH = "width";
+  private static final String KEY_FLATTENING = "flattening";
 
   private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -39,7 +40,8 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
           + KEY_CURVE     + " REAL, "
           + KEY_ROUNDNESS + " REAL, "
           + KEY_WEIGHT    + " REAL, "
-          + KEY_WIDTH     + " REAL);";
+          + KEY_WIDTH     + " REAL, "
+          + KEY_FLATTENING + "REAL);";
   private static final String TABLE_SELECT = "SELECT * FROM %s ORDER BY %s DESC";
   private static final String ROW_DELETE = "DELETE FROM %s WHERE %s=%d";
 
@@ -69,6 +71,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
     values.put(KEY_ROUNDNESS, features.getRoundness());
     values.put(KEY_WEIGHT, features.getWeight());
     values.put(KEY_WIDTH, features.getWidth());
+    values.put(KEY_FLATTENING, features.getFlattening());
     getWritableDatabase().insert(TABLE_NAME, null, values);
   }
 
@@ -100,6 +103,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
       builder.setRoundness(cursor.getDouble(cursor.getColumnIndex(KEY_ROUNDNESS)));
       builder.setWeight(cursor.getDouble(cursor.getColumnIndex(KEY_WEIGHT)));
       builder.setWidth(cursor.getDouble(cursor.getColumnIndex(KEY_WIDTH)));
+      builder.setFlattening(cursor.getDouble(cursor.getColumnIndex(KEY_FLATTENING)));
 
       results.add(builder.build());
     }

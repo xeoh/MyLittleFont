@@ -32,6 +32,7 @@ public class FeatureController {
   private double roundness = FontItem.DEFAULT_CONTROLS.getRoundness();
   private double weight = FontItem.DEFAULT_CONTROLS.getWeight();
   private double width = FontItem.DEFAULT_CONTROLS.getWidth();
+  private double flattening = FontItem.DEFAULT_CONTROLS.getFlattening();
   private double gap = DEFAULT_GAP;
 
   /**
@@ -193,6 +194,29 @@ public class FeatureController {
    */
   public void setWidth(double width) {
     this.width = width;
+    onFeatureChange();
+  }
+
+  /**
+   * Getter flattening value.
+   *
+   * <p> Flattening is proportional value. If flattening is 0,
+   * {@link kr.ac.kaist.team888.locator.Locator} automatically
+   * computes fundamental position. If 1, flatten position.
+   *
+   * @return flattening value
+   */
+  public double getFlattening() {
+    return flattening;
+  }
+
+  /**
+   * Setter flattening value.
+   *
+   * @param flattening flattening value
+   */
+  public void setFlattening(double flattening) {
+    this.flattening = flattening;
     onFeatureChange();
   }
 

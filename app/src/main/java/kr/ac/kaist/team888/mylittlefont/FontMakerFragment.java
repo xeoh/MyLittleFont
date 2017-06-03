@@ -198,6 +198,20 @@ public class FontMakerFragment extends Fragment {
         FeatureController.getInstance().setWeight(value);
       }
     };
+
+    // Feature - flattening
+    SeekBar flatteningControl = (SeekBar) view.findViewById(R.id.flatteningControl);
+    new SeekBarContainer(flatteningControl) {
+      @Override
+      public double getFeatureValue() {
+        return FeatureController.getInstance().getFlattening();
+      }
+
+      @Override
+      public void setFeatureValue(double value) {
+        FeatureController.getInstance().setFlattening(value);
+      }
+    };
   }
 
   private abstract class SeekBarContainer extends ViewContainer<SeekBar> {
