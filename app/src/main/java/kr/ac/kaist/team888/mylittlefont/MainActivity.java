@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity
 
   private FontMakerFragment fontMakerFragment;
   private FontViewerFragment fontViewerFragment;
-  private DatabaseOpenHelper db = new DatabaseOpenHelper(getApplicationContext());
+  private DatabaseOpenHelper db;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +57,8 @@ public class MainActivity extends AppCompatActivity
 
     NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
     navigationView.setNavigationItemSelectedListener(this);
+
+    db = new DatabaseOpenHelper(getApplicationContext());
 
     requestPermission();
   }
