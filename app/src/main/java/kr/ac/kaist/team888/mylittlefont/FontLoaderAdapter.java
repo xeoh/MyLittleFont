@@ -59,9 +59,11 @@ public class FontLoaderAdapter extends BaseAdapter {
 
     // Make a locator for preview.
     Locator locator = new Locator(PREVIEW_LETTER);
+    locator.manipulateSkeleton(item.getFlattening(), item.getArise());
     locator.applyCurve(item.getCurve());
     locator.applyWidth(item.getWidth());
     locator.applyContour(item.getWeight(), item.getRoundness(), item.getContrast());
+    locator.applySlant(item.getSlant());
 
     // Store a locator in a list.
     ArrayList<Locator> locators = new ArrayList<>(1);

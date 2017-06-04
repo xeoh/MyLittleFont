@@ -36,6 +36,7 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
   private static final double CONTRAST_MIN = .1;
   private static final double WIDTH_MIN = 0.7;
   private static final double WIDTH_MAX = 1.3;
+  private static final double SLANT_MAX = 0.3;
   private static final int PRIORITY = 1;
 
   private static final int NEWTON_MAX_EVAL = 100000;
@@ -680,6 +681,31 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
     }
   }
 
+  /**
+   * Apply slant feature.
+   *
+   * @param slantControl slant value within range 0~1
+   */
+  public void applySlant(double slantControl) {
+    double slantRadian = slantControl * Math.PI / 2 * SLANT_MAX;
+    for (ArrayList<BezierCurve> contour : contours) {
+      for (int i = 0; i < contour.size(); i++) {
+        BezierCurve bezierCurve = contour.get(i);
+        Vector2D[] points = bezierCurve.getPoints();
+        Vector2D[] newPoints = new Vector2D[points.length];
+        for (int j = 0; j < points.length; j++) {
+          Vector2D point = points[j];
+
+          double newX = point.getX()
+              + (point.getY() - locatorRegion.getMinY()) / (Math.tan(Math.PI / 2 - slantRadian));
+
+          newPoints[j] = new Vector2D(newX, point.getY());
+        }
+        bezierCurve.setPoints(newPoints);
+      }
+    }
+  }
+
   private void setPaths(Region canvasRegion, ArrayList<ArrayList<BezierCurve>> curvesSet,
                         ArrayList<Path> paths, boolean showPoints) {
     for (ArrayList<BezierCurve> curves : curvesSet) {
@@ -754,6 +780,7 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
     applyContour(FeatureController.getInstance().getWeight(),
         FeatureController.getInstance().getRoundness(),
         FeatureController.getInstance().getContrast());
+    applySlant(FeatureController.getInstance().getSlant());
   }
 
   @Override

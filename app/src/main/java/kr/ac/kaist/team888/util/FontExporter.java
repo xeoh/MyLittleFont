@@ -40,6 +40,7 @@ public class FontExporter extends AsyncTask<String, Double, File> {
   private double width;
   private double flattening;
   private double arise;
+  private double slant;
   private double gap;
   private ExportType exportType;
 
@@ -69,6 +70,7 @@ public class FontExporter extends AsyncTask<String, Double, File> {
     this.width = FeatureController.getInstance().getWidth();
     this.flattening = FeatureController.getInstance().getFlattening();
     this.arise = FeatureController.getInstance().getArise();
+    this.slant = FeatureController.getInstance().getSlant();
     this.gap = FeatureController.getInstance().getGap();
 
     path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
@@ -83,6 +85,7 @@ public class FontExporter extends AsyncTask<String, Double, File> {
     locator.applyCurve(curve);
     locator.applyWidth(width);
     locator.applyContour(weight, roundness, contrast);
+    locator.applySlant(slant);
 
     double regionWidth = locator.locatorRegion.getMaxX()
         - locator.locatorRegion.getMinX();
