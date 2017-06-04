@@ -34,6 +34,7 @@ public class FeatureController {
   private double contrast = FontItem.DEFAULT_CONTROLS.getContrast();
   private double width = FontItem.DEFAULT_CONTROLS.getWidth();
   private double flattening = FontItem.DEFAULT_CONTROLS.getFlattening();
+  private double arise = FontItem.DEFAULT_CONTROLS.getArise();
   private double gap = DEFAULT_GAP;
 
   /**
@@ -241,6 +242,29 @@ public class FeatureController {
   }
 
   /**
+   * Getter arise value.
+   *
+   * <p> Arise is proportional value. If arise is 1,
+   * {@link kr.ac.kaist.team888.locator.Locator} automatically
+   * computes arise position. If 0, fundamental position.
+   *
+   * @return arise value
+   */
+  public double getArise() {
+    return arise;
+  }
+
+  /**
+   * Setter arise value.
+   *
+   * @param arise arise value
+   */
+  public void setArise(double arise) {
+    this.arise = arise;
+    onFeatureChange();
+  }
+
+  /**
    * Sets feature values as of the given font item in one swoop.
    *
    * <p>This method may be useful for changing more than one features at once
@@ -255,6 +279,7 @@ public class FeatureController {
     roundness = fontItem.getRoundness();
     width = fontItem.getWidth();
     flattening = fontItem.getFlattening();
+    arise = fontItem.getArise();
     onFeatureChange();
   }
 

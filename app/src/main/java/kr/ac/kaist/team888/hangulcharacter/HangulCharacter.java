@@ -33,10 +33,12 @@ public abstract class HangulCharacter implements FeatureController.OnFeatureChan
   private static final double Y_OFFSET = 30;
   private static final int PRIORITY = 0;
 
+  private static final String ARISE_KEY = "arise";
   private static final String FLATTEN_KEY = "flatten";
   private static final String SKELETONS_KEY = "skeletons";
-  private ArrayList<ArrayList<ArrayList<Vector2D>>> skeletonsPoints;
+  private ArrayList<ArrayList<ArrayList<Vector2D>>> arisePoints;
   private ArrayList<ArrayList<ArrayList<Vector2D>>> flattenPoints;
+  private ArrayList<ArrayList<ArrayList<Vector2D>>> skeletonsPoints;
 
   private ArrayList<ArrayList<ArrayList<BezierCurve>>> skeletonsData;
   private ArrayList<ArrayList<ArrayList<BezierCurve>>> skeletons;
@@ -87,6 +89,10 @@ public abstract class HangulCharacter implements FeatureController.OnFeatureChan
       flattenPoints = gson.create().fromJson(data.getAsJsonArray(FLATTEN_KEY), collectionType);
     }
 
+    if (data.getAsJsonArray(ARISE_KEY) != null) {
+      arisePoints = gson.create().fromJson(data.getAsJsonArray(ARISE_KEY), collectionType);
+    }
+
     FeatureController.getInstance().registerOnFeatureChangeListener(this);
   }
 
@@ -95,6 +101,8 @@ public abstract class HangulCharacter implements FeatureController.OnFeatureChan
 
     if (flattenPoints != null && isFlatable(currentIndex, characters)) {
       selectedPoints = flattenPoints;
+    } else if (arisePoints != null && currentIndex != -1) {
+      selectedPoints = arisePoints;
     }
 
     // Construct the skeletons data
@@ -175,6 +183,10 @@ public abstract class HangulCharacter implements FeatureController.OnFeatureChan
     }
 
     region = new Region(minX - X_OFFSET, maxX + X_OFFSET, minY - Y_OFFSET, maxY + Y_OFFSET);
+  }
+
+  public boolean isArisable() {
+    return arisePoints != null;
   }
 
   public boolean isFlatable(int currentIndex, ArrayList<HangulCharacter> characters) {
