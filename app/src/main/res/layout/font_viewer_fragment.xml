@@ -1,12 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.percent.PercentFrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#b0c0ff">
+    android:layout_height="match_parent">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello, Font Viewer Fragment"/>
+    <LinearLayout
+        android:orientation="vertical"
+        app:layout_widthPercent="30%"
+        app:layout_heightPercent="100%"
+        android:background="#bbbbbb">
 
-</RelativeLayout>
+        <ListView
+            android:id="@+id/examine_list_view"
+            android:divider="#bbbbbb"
+            android:dividerHeight="4dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+    </LinearLayout>
+
+    <ScrollView
+        android:id="@+id/examine_scroll_view"
+        app:layout_widthPercent="70%"
+        app:layout_heightPercent="100%"
+        app:layout_marginLeftPercent="30%"
+        android:fillViewport="true" >
+
+        <kr.ac.kaist.team888.mylittlefont.ExpandableHeightGridView
+            android:id="@+id/examine_grid_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:horizontalSpacing="10dp"
+            android:isScrollContainer="false"
+            android:numColumns="10"
+            android:stretchMode="columnWidth"
+            android:verticalSpacing="10dp" />
+    </ScrollView>
+
+</android.support.percent.PercentFrameLayout>
