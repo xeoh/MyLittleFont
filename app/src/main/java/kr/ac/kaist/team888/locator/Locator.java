@@ -31,6 +31,7 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
   private static final int CURVE_GAP = 2;
   private static final double CURVE_TOLERANCE = 1E-4;
   private static final int WEIGHT_DEFAULT = 32;
+  private static final double CONTRAST_MIN = .1;
   private static final double WIDTH_MIN = 0.7;
   private static final double WIDTH_MAX = 1.3;
   private static final int PRIORITY = 1;
@@ -448,10 +449,12 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
    *
    * @param weightControl weight control value from 0 to 1
    * @param roundnessControl roundness control value from 0 to 1
+   * @param contrastControl contrast control value from 0 to 1
    */
-  public void applyContour(double weightControl, double roundnessControl) {
+  public void applyContour(double weightControl, double roundnessControl, double contrastControl) {
     double weight = weightControl - .5;
     double roundness = roundnessControl;
+    double contrast = CONTRAST_MIN + contrastControl * 2 * (1 - CONTRAST_MIN);
     contours = new ArrayList<>();
     for (ArrayList<BezierCurve> curves : skeletons) {
       ArrayList<BezierCurve> newCurves = new ArrayList<>();
@@ -461,9 +464,8 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
         }
         newCurves.add(curve);
       }
-      double delta = WEIGHT_DEFAULT
-          + (WEIGHT_DEFAULT - 1) * weight;
-      contours.add(BezierCurveUtils.stroke(newCurves, delta, roundness));
+      double delta = WEIGHT_DEFAULT + (WEIGHT_DEFAULT - 1) * weight;
+      contours.add(BezierCurveUtils.stroke(newCurves, delta, roundness, contrast));
     }
   }
 
@@ -626,7 +628,8 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
     applyCurve(FeatureController.getInstance().getCurve());
     applyWidth(FeatureController.getInstance().getWidth(), true);
     applyContour(FeatureController.getInstance().getWeight(),
-        FeatureController.getInstance().getRoundness());
+        FeatureController.getInstance().getRoundness(),
+        FeatureController.getInstance().getContrast());
   }
 
   @Override

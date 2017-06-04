@@ -27,6 +27,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
   private static final String KEY_CURVE = "curve";
   private static final String KEY_ROUNDNESS = "roundness";
   private static final String KEY_WEIGHT = "weight";
+  private static final String KEY_CONTRAST = "contrast";
   private static final String KEY_WIDTH = "width";
   private static final String KEY_FLATTENING = "flattening";
   private static final String KEY_ARISE = "arise";
@@ -41,6 +42,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
           + KEY_CURVE     + " REAL, "
           + KEY_ROUNDNESS + " REAL, "
           + KEY_WEIGHT    + " REAL, "
+          + KEY_CONTRAST  + " REAL, "
           + KEY_WIDTH     + " REAL, "
           + KEY_FLATTENING + "REAL, "
           + KEY_ARISE + "REAL);";
@@ -72,6 +74,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
     values.put(KEY_CURVE, features.getCurve());
     values.put(KEY_ROUNDNESS, features.getRoundness());
     values.put(KEY_WEIGHT, features.getWeight());
+    values.put(KEY_CONTRAST, features.getContrast());
     values.put(KEY_WIDTH, features.getWidth());
     values.put(KEY_FLATTENING, features.getFlattening());
     values.put(KEY_ARISE, features.getArise());
@@ -105,6 +108,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
       builder.setCurve(cursor.getDouble(cursor.getColumnIndex(KEY_CURVE)));
       builder.setRoundness(cursor.getDouble(cursor.getColumnIndex(KEY_ROUNDNESS)));
       builder.setWeight(cursor.getDouble(cursor.getColumnIndex(KEY_WEIGHT)));
+      builder.setContrast(cursor.getDouble(cursor.getColumnIndex(KEY_CONTRAST)));
       builder.setWidth(cursor.getDouble(cursor.getColumnIndex(KEY_WIDTH)));
       builder.setFlattening(cursor.getDouble(cursor.getColumnIndex(KEY_FLATTENING)));
       builder.setArise(cursor.getDouble(cursor.getColumnIndex(KEY_ARISE)));

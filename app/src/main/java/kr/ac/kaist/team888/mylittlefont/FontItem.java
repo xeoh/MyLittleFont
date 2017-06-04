@@ -15,6 +15,7 @@ public class FontItem {
   private static final double DEFAULT_CONTROL_CURVE = 0;
   private static final double DEFAULT_CONTROL_ROUNDNESS = 0;
   private static final double DEFAULT_CONTROL_WEIGHT = .5;
+  private static final double DEFAULT_CONTROL_CONTRAST = .5;
   private static final double DEFAULT_CONTROL_WIDTH = .5;
   private static final double DEFAULT_CONTROL_FLATTENING = 0;
   private static final double DEFAULT_CONTROL_ARISE = 0;
@@ -27,6 +28,9 @@ public class FontItem {
       DEFAULT_CONTROL_CURVE, DEFAULT_CONTROL_ROUNDNESS,
       DEFAULT_CONTROL_WEIGHT, DEFAULT_CONTROL_WIDTH,
       DEFAULT_CONTROL_FLATTENING, DEFAULT_CONTROL_ARISE
+      DEFAULT_CONTROL_WEIGHT, DEFAULT_CONTROL_CONTRAST,
+      DEFAULT_CONTROL_WIDTH, DEFAULT_CONTROL_FLATTENING, 
+      DEFAULT_CONTROL_ARISE
   );
 
   private int id;
@@ -35,18 +39,21 @@ public class FontItem {
   private double curve;
   private double roundness;
   private double weight;
+  private double contrast;
   private double width;
   private double flattening;
   private double arise;
 
   private FontItem(int id, String name, Date datetime,
-           double curve, double roundness, double weight, double width, double flattening, double arise) {
+                   double curve, double roundness, double weight,
+                   double contrast, double width, double flattening, double arise) {
     this.id = id;
     this.name = name;
     this.datetime = datetime;
     this.curve = curve;
     this.roundness = roundness;
     this.weight = weight;
+    this.contrast = contrast;
     this.width = width;
     this.flattening = flattening;
     this.arise = arise;
@@ -161,6 +168,24 @@ public class FontItem {
   }
 
   /**
+   * Returns the contrast value of the font.
+   *
+   * @return the contrast value of the font
+   */
+  public double getContrast() {
+    return contrast;
+  }
+
+  /**
+   * Sets the contrast of the font.
+   *
+   * @param contrast the contrast of the font
+   */
+  public void setContrast(double contrast) {
+    this.contrast = contrast;
+  }
+
+  /**
    * Returns the width value of the font.
    *
    * @return the width value of the font
@@ -221,6 +246,7 @@ public class FontItem {
     private double curve;
     private double roundness;
     private double weight;
+    private double contrast;
     private double width;
     private double flattening;
     private double arise;
@@ -292,6 +318,17 @@ public class FontItem {
     }
 
     /**
+     * Sets the contrast value.
+     *
+     * @param contrast the contrast value
+     * @return this builder, useful for chaining
+     */
+    public FontItemBuilder setContrast(double contrast) {
+      this.contrast = contrast;
+      return this;
+    }
+
+    /**
      * Sets the width value.
      *
      * @param width the width value
@@ -330,7 +367,8 @@ public class FontItem {
      * @return the newly constructed {@link FontItem} object
      */
     public FontItem build() {
-      return new FontItem(id, name, datetime, curve, roundness, weight, width, flattening, arise);
+      return new FontItem(id, name, datetime, curve, roundness, weight,
+          contrast, width, flattening, arise);
     }
   }
 }

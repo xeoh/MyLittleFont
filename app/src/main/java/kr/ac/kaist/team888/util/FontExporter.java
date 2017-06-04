@@ -36,6 +36,7 @@ public class FontExporter extends AsyncTask<String, Double, File> {
   private double curve;
   private double roundness;
   private double weight;
+  private double contrast;
   private double width;
   private double flattening;
   private double arise;
@@ -64,6 +65,7 @@ public class FontExporter extends AsyncTask<String, Double, File> {
     this.curve = FeatureController.getInstance().getCurve();
     this.roundness = FeatureController.getInstance().getRoundness();
     this.weight = FeatureController.getInstance().getWeight();
+    this.contrast = FeatureController.getInstance().getContrast();
     this.width = FeatureController.getInstance().getWidth();
     this.flattening = FeatureController.getInstance().getFlattening();
     this.arise = FeatureController.getInstance().getArise();
@@ -77,7 +79,7 @@ public class FontExporter extends AsyncTask<String, Double, File> {
   private String makeFontData(char letter) {
     Locator locator = new Locator(letter, false);
     locator.manipulateSkeleton(flattening, arise);
-    locator.applyContour(weight, roundness);
+    locator.applyContour(weight, roundness, contrast);
     locator.applyCurve(curve);
     locator.applyWidth(width);
 

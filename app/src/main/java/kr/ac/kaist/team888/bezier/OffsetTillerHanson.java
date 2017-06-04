@@ -19,7 +19,7 @@ class OffsetTillerHanson {
    * @param delta offset distance
    * @return a offset Bezier curve
    */
-  protected static BezierCurve offset(BezierCurve curve, double delta) {
+  protected static BezierCurve offset(BezierCurve curve, double delta, double contrast) {
     Vector2D[] points = curve.getPoints();
     ArrayList<Vector2D> offsetPoints = new ArrayList<>();
     Vector2D prevPoint;
@@ -28,7 +28,7 @@ class OffsetTillerHanson {
       prevPoint = (i == 0) ? null : points[i - 1];
       nextPoint = (i == curve.getOrder()) ? null : points[i + 1];
       offsetPoints.add(offsetPoint(points[i], prevPoint, nextPoint,
-          delta, curve.getOffsetVector(i)));
+          delta, contrast, curve.getOffsetVector(i)));
     }
 
     return new BezierCurve.Builder()
@@ -47,12 +47,12 @@ class OffsetTillerHanson {
    * @return a contour sequence
    */
   protected static ArrayList<BezierCurve> stroke(ArrayList<BezierCurve> curves,
-                                                 double delta, double roundness) {
+                                                 double delta, double roundness, double contrast) {
     ArrayList<BezierCurve> contourUpper = new ArrayList<>();
     ArrayList<BezierCurve> contourLower = new ArrayList<>();
     for (BezierCurve curve : curves) {
-      contourUpper.add(offset(curve, delta));
-      contourLower.add(offset(curve, -delta).reverse());
+      contourUpper.add(offset(curve, delta, contrast));
+      contourLower.add(offset(curve, -delta, contrast).reverse());
     }
     Collections.reverse(contourLower);
 
@@ -71,14 +71,14 @@ class OffsetTillerHanson {
         .equals(lastBaseCurve.getPoint(lastBaseCurve.getOrder()));
 
     // Upper contour filling
-    fillHalfContour(contourUpper, curves, contour, delta);
+    fillHalfContour(contourUpper, curves, contour, delta, contrast);
 
     // Connect upper to lower
     if (isClosed) {
-      joinTwoHalfContours(lastBasePoint, lastPrevPoint, firstNextPoint, contour, delta,
+      joinTwoHalfContours(lastBasePoint, lastPrevPoint, firstNextPoint, contour, delta, contrast,
           lastBaseCurve.getOffsetVector(), firstBaseCurve.getOffsetVector());
     } else {
-      joinTwoHalfContours(lastBasePoint, lastPrevPoint, contour, delta, roundness,
+      joinTwoHalfContours(lastBasePoint, lastPrevPoint, contour, delta, roundness, contrast,
           lastBaseCurve.getOffsetVector());
     }
 
@@ -89,14 +89,14 @@ class OffsetTillerHanson {
       reverseBezierCurves.add(curve.reverse());
     }
     Collections.reverse(reverseBezierCurves);
-    fillHalfContour(contourLower, reverseBezierCurves, contour, delta);
+    fillHalfContour(contourLower, reverseBezierCurves, contour, delta, contrast);
 
     // Connect lower to upper
     if (isClosed) {
-      joinTwoHalfContours(firstBasePoint, firstNextPoint, lastPrevPoint, contour, delta,
+      joinTwoHalfContours(firstBasePoint, firstNextPoint, lastPrevPoint, contour, delta, contrast,
           firstBaseCurve.getOffsetVector(), lastBaseCurve.getOffsetVector());
     } else {
-      joinTwoHalfContours(firstBasePoint, firstNextPoint, contour, delta, roundness,
+      joinTwoHalfContours(firstBasePoint, firstNextPoint, contour, delta, roundness, contrast,
           firstBaseCurve.getOffsetVector());
     }
 
@@ -105,7 +105,8 @@ class OffsetTillerHanson {
 
   private static void fillHalfContour(ArrayList<BezierCurve> halfContour,
                                       ArrayList<BezierCurve> baseCurves,
-                                      ArrayList<BezierCurve> contour, double delta) {
+                                      ArrayList<BezierCurve> contour,
+                                      double delta, double contrast) {
     for (int i = 0; i < halfContour.size(); i++) {
       BezierCurve currentUpperCurve = halfContour.get(i);
       contour.add(currentUpperCurve);
@@ -124,7 +125,7 @@ class OffsetTillerHanson {
 
       Vector2D joiningPoint = offsetPoint(nextBaseCurve.getPoint(0),
           currentBaseCurve.getPoint(currentBaseCurve.getOrder() - 1),
-          nextBaseCurve.getPoint(1), delta, offsetVector,
+          nextBaseCurve.getPoint(1), delta, contrast, offsetVector,
           nextBaseCurve.getOffsetVector());
 
       Vector2D[] joiningPoints = {currentUpperCurve.getPoint(currentUpperCurve.getOrder()),
@@ -149,17 +150,17 @@ class OffsetTillerHanson {
 
   private static void joinTwoHalfContours(Vector2D basePoint, Vector2D prevPoint,
                                           ArrayList<BezierCurve> contour,
-                                          double delta, double roundness,
+                                          double delta, double roundness, double contrast,
                                           Vector2D offsetVector) {
     Vector2D baseUnitVector = basePoint.subtract(prevPoint).normalize();
-    double deltaRatio = getOffsetTargetVector(baseUnitVector, offsetVector)
+    double deltaRatio = getOffsetTargetVector(baseUnitVector, contrast, offsetVector)
         .dotProduct(baseUnitVector);
     Vector2D joiningPoint = basePoint.add(delta * deltaRatio, baseUnitVector);
     Vector2D[] joiningPoints = {
-        offsetPoint(basePoint, null, joiningPoint, delta, offsetVector),
-        offsetPoint(joiningPoint, basePoint, null, delta, offsetVector),
-        offsetPoint(joiningPoint, basePoint, null, -delta, offsetVector),
-        offsetPoint(basePoint, null, joiningPoint, -delta, offsetVector),
+        offsetPoint(basePoint, null, joiningPoint, delta, contrast, offsetVector),
+        offsetPoint(joiningPoint, basePoint, null, delta, contrast, offsetVector),
+        offsetPoint(joiningPoint, basePoint, null, -delta, contrast, offsetVector),
+        offsetPoint(basePoint, null, joiningPoint, -delta, contrast, offsetVector),
     };
 
     Vector2D[][] roundPoints = {
@@ -191,15 +192,16 @@ class OffsetTillerHanson {
 
   private static void joinTwoHalfContours(Vector2D basePoint, Vector2D prevPoint,
                                           Vector2D oppositePrevPoint,
-                                          ArrayList<BezierCurve> contour, double delta,
+                                          ArrayList<BezierCurve> contour,
+                                          double delta, double contrast,
                                           Vector2D baseOffsetVector, Vector2D nextOffsetVector) {
     Vector2D[] joiningPoints = {
-        offsetPoint(basePoint, prevPoint, null, delta, baseOffsetVector),
-        offsetPoint(basePoint, prevPoint, oppositePrevPoint, delta,
+        offsetPoint(basePoint, prevPoint, null, delta, contrast, baseOffsetVector),
+        offsetPoint(basePoint, prevPoint, oppositePrevPoint, delta, contrast,
             baseOffsetVector, nextOffsetVector),
-        offsetPoint(basePoint, prevPoint, oppositePrevPoint, -delta,
+        offsetPoint(basePoint, prevPoint, oppositePrevPoint, -delta, contrast,
             baseOffsetVector, nextOffsetVector),
-        offsetPoint(basePoint, prevPoint, null, -delta, baseOffsetVector)
+        offsetPoint(basePoint, prevPoint, null, -delta, contrast, baseOffsetVector)
     };
 
     contour.add(new BezierCurve.Builder()
@@ -229,22 +231,24 @@ class OffsetTillerHanson {
   }
 
   private static Vector2D offsetPoint(Vector2D currentPoint, Vector2D prevPoint,
-                                      Vector2D nextPoint, double delta, Vector2D offsetVector) {
-    return offsetPoint(currentPoint, prevPoint, nextPoint, delta, offsetVector, offsetVector);
+                                      Vector2D nextPoint, double delta, double contrast,
+                                      Vector2D offsetVector) {
+    return offsetPoint(currentPoint, prevPoint, nextPoint, delta, contrast,
+        offsetVector, offsetVector);
   }
 
   private static Vector2D offsetPoint(Vector2D currentPoint, Vector2D prevPoint,
-                                      Vector2D nextPoint, double delta,
+                                      Vector2D nextPoint, double delta, double contrast,
                                       Vector2D prevOffsetVector, Vector2D nextOffsetVector) {
     if (nextPoint == null) {
-      return offsetPoint(currentPoint, prevPoint, delta, prevOffsetVector);
+      return offsetPoint(currentPoint, prevPoint, delta, contrast, prevOffsetVector);
     }
     if (prevPoint == null) {
-      return offsetPoint(currentPoint, nextPoint, -delta, nextOffsetVector);
+      return offsetPoint(currentPoint, nextPoint, -delta, contrast, nextOffsetVector);
     }
 
-    Vector2D point1 = offsetPoint(currentPoint, prevPoint, delta, prevOffsetVector);
-    Vector2D point2 = offsetPoint(currentPoint, nextPoint, -delta, nextOffsetVector);
+    Vector2D point1 = offsetPoint(currentPoint, prevPoint, delta, contrast, prevOffsetVector);
+    Vector2D point2 = offsetPoint(currentPoint, nextPoint, -delta, contrast, nextOffsetVector);
 
     Vector2D unit1 = currentPoint.subtract(prevPoint).normalize();
     Vector2D unit2 = nextPoint.subtract(currentPoint).normalize();
@@ -260,17 +264,19 @@ class OffsetTillerHanson {
     return point1.add(factor, unit1);
   }
 
-  private static Vector2D offsetPoint(Vector2D currentPoint, Vector2D prevPoint, double delta,
-                                      Vector2D offsetVector) {
+  private static Vector2D offsetPoint(Vector2D currentPoint, Vector2D prevPoint,
+                                      double delta, double contrast, Vector2D offsetVector) {
     Vector2D vector = currentPoint.subtract(prevPoint);
     Vector2D perpendicularVector = new Vector2D(vector.getY(), -vector.getX());
-    Vector2D targetVector = getOffsetTargetVector(perpendicularVector, offsetVector);
-    return currentPoint.add(delta, perpendicularVector.normalize().scalarMultiply(targetVector.getNorm()));
+    Vector2D targetVector = getOffsetTargetVector(perpendicularVector, contrast, offsetVector);
+    return currentPoint.add(delta, perpendicularVector.normalize()
+        .scalarMultiply(targetVector.getNorm()));
   }
 
-  private static Vector2D getOffsetTargetVector(Vector2D vector, Vector2D offsetVector) {
+  private static Vector2D getOffsetTargetVector(Vector2D vector, double contrast,
+                                                Vector2D offsetVector) {
     Vector2D unitVector = vector.normalize();
     return new Vector2D(unitVector.getX() * offsetVector.getX(),
-        unitVector.getY() * offsetVector.getY());
+        contrast * unitVector.getY() * offsetVector.getY());
   }
 }
