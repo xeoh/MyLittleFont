@@ -381,10 +381,11 @@ public class BezierCurve extends ParametricPolynomialCurve {
    * @param offsetMethod offset method to apply
    * @return a new offset Bezier curve
    */
-  public BezierCurve offset(double delta, BezierCurveOffsetMethodType offsetMethod) {
+  public BezierCurve offset(double delta, double contrast,
+                            BezierCurveOffsetMethodType offsetMethod) {
     switch (offsetMethod) {
       case TillerHanson:
-        return OffsetTillerHanson.offset(this, delta);
+        return OffsetTillerHanson.offset(this, delta, contrast);
       default:
         return null;
     }
@@ -401,8 +402,8 @@ public class BezierCurve extends ParametricPolynomialCurve {
    * @param delta distance to offset
    * @return a new offset Bezier curve
    */
-  public BezierCurve offset(double delta) {
-    return offset(delta, offsetMethod);
+  public BezierCurve offset(double delta, double contrast) {
+    return offset(delta, contrast, offsetMethod);
   }
 
   /**

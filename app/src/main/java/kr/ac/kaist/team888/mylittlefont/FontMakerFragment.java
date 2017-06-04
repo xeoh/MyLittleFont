@@ -248,6 +248,20 @@ public class FontMakerFragment extends Fragment {
       }
     };
 
+    // Feature - contrast
+    SeekBar contrastControl = (SeekBar) view.findViewById(R.id.contrastControl);
+    new SeekBarContainer(contrastControl) {
+      @Override
+      public double getFeatureValue() {
+        return FeatureController.getInstance().getContrast();
+      }
+
+      @Override
+      public void setFeatureValue(double value) {
+        FeatureController.getInstance().setContrast(value);
+      }
+    };
+
     // Feature - flattening
     SeekBar flatteningControl = (SeekBar) view.findViewById(R.id.flatteningControl);
     new SeekBarContainer(flatteningControl) {
