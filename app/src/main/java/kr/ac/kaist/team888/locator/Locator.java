@@ -510,6 +510,13 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
     applyWidth(widthControl);
   }
 
+  /**
+   * Manipulate the skeleton with flattening data and arise data
+   * with given flattening control value and arise control value .
+   *
+   * @param flatteningControl flattening control value from 0 to 1
+   * @param ariseControl arise control value from 0 to 1
+   */
   public void manipulateSkeleton(double flatteningControl, double ariseControl) {
     if (!isFlatable && !isArisable) {
       processedData = skeletonsData;
@@ -536,7 +543,7 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
             } else {
               BezierCurve between = BezierCurveUtils.interpolate(
                       fundamentalCurve, flattenCurve, flatteningControl);
-              processedSegment.add(between.clone());
+              processedSegment.add(between);
             }
           } else if (isArisable) {
             BezierCurve ariseCurve = ariseData.get(i).get(j).get(k);
@@ -545,7 +552,7 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
             } else {
               BezierCurve between = BezierCurveUtils.interpolate(
                       ariseCurve, fundamentalCurve, ariseControl);
-              processedSegment.add(between.clone());
+              processedSegment.add(between);
             }
           } else {
             // TODO: handle when character has flattenData & ariseData.
@@ -624,7 +631,8 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
 
   @Override
   public void onFeatureChange() {
-    manipulateSkeleton(FeatureController.getInstance().getFlattening(), FeatureController.getInstance().getArise());
+    manipulateSkeleton(FeatureController.getInstance().getFlattening(),
+            FeatureController.getInstance().getArise());
     applyCurve(FeatureController.getInstance().getCurve());
     applyWidth(FeatureController.getInstance().getWidth(), true);
     applyContour(FeatureController.getInstance().getWeight(),

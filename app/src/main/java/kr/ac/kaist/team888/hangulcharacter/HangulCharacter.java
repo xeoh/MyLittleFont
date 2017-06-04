@@ -186,7 +186,7 @@ public abstract class HangulCharacter implements FeatureController.OnFeatureChan
   }
 
   public boolean isArisable() {
-    return arisePoints != null ? true : false;
+    return arisePoints != null;
   }
 
   public boolean isFlatable(int currentIndex, ArrayList<HangulCharacter> characters) {
