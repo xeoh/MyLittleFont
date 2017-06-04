@@ -19,6 +19,7 @@ public class FontItem {
   private static final double DEFAULT_CONTROL_WIDTH = .5;
   private static final double DEFAULT_CONTROL_FLATTENING = 0;
   private static final double DEFAULT_CONTROL_ARISE = 0;
+  private static final double DEFAULT_CONTROL_SLANT = 0;
 
   /**
    * Initial font with default feature values.
@@ -28,7 +29,7 @@ public class FontItem {
       DEFAULT_CONTROL_CURVE, DEFAULT_CONTROL_ROUNDNESS,
       DEFAULT_CONTROL_WEIGHT, DEFAULT_CONTROL_CONTRAST,
       DEFAULT_CONTROL_WIDTH, DEFAULT_CONTROL_FLATTENING,
-      DEFAULT_CONTROL_ARISE
+      DEFAULT_CONTROL_ARISE, DEFAULT_CONTROL_SLANT
   );
 
   private int id;
@@ -41,10 +42,12 @@ public class FontItem {
   private double width;
   private double flattening;
   private double arise;
+  private double slant;
 
   private FontItem(int id, String name, Date datetime,
                    double curve, double roundness, double weight,
-                   double contrast, double width, double flattening, double arise) {
+                   double contrast, double width, double flattening, double arise,
+                   double slant) {
     this.id = id;
     this.name = name;
     this.datetime = datetime;
@@ -55,6 +58,7 @@ public class FontItem {
     this.width = width;
     this.flattening = flattening;
     this.arise = arise;
+    this.slant = slant;
   }
 
   /**
@@ -231,10 +235,27 @@ public class FontItem {
   /**
    * Sets the flattening of the font.
    *
-   * @param flattening the flattening of the font
+   * @param arise the flattening of the font
    */
-  public void setArise(double flattening) {
+  public void setArise(double arise) {
     this.arise = arise;
+  }
+
+  /** Returns the slant value of font.
+   *
+   * @return the slant value of the font
+   */
+  public double getSlant() {
+    return this.slant;
+  }
+
+  /**
+   * Sets the slant value of the font.
+   *
+   * @param slant the slant of the font
+   */
+  public void setSlant(double slant) {
+    this.slant = slant;
   }
 
   public static class FontItemBuilder {
@@ -248,6 +269,7 @@ public class FontItem {
     private double width;
     private double flattening;
     private double arise;
+    private double slant;
 
     /**
      * Sets the id.
@@ -349,6 +371,17 @@ public class FontItem {
     }
 
     /**
+     * Sets the slant value.
+     *
+     * @param slant the slant value
+     * @return this builder, useful for chaining
+     */
+    public FontItemBuilder setSlant(double slant) {
+      this.slant = slant;
+      return this;
+    }
+
+    /**
      * Sets the arise value.
      *
      * @param arise the arise value
@@ -366,7 +399,7 @@ public class FontItem {
      */
     public FontItem build() {
       return new FontItem(id, name, datetime, curve, roundness, weight,
-          contrast, width, flattening, arise);
+          contrast, width, flattening, arise, slant);
     }
   }
 }

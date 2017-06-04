@@ -36,6 +36,7 @@ public class FeatureController {
   private double flattening = FontItem.DEFAULT_CONTROLS.getFlattening();
   private double arise = FontItem.DEFAULT_CONTROLS.getArise();
   private double gap = DEFAULT_GAP;
+  private double slant = FontItem.DEFAULT_CONTROLS.getSlant();
 
   /**
    * Interface for listening change of hangul features.
@@ -264,6 +265,26 @@ public class FeatureController {
     onFeatureChange();
   }
 
+  /** Getter slant value.
+   *
+   * <p> Slant value range is 0~1 which is map to 0~30 degree.
+   *
+   * @return slant value
+   */
+  public double getSlant() {
+    return slant;
+  }
+
+  /**
+   * Setter slant value.
+   *
+   * @param slant slant value
+   */
+  public void setSlant(double slant) {
+    this.slant = slant;
+    onFeatureChange();
+  }
+
   /**
    * Sets feature values as of the given font item in one swoop.
    *
@@ -280,6 +301,7 @@ public class FeatureController {
     width = fontItem.getWidth();
     flattening = fontItem.getFlattening();
     arise = fontItem.getArise();
+    slant = fontItem.getSlant();
     onFeatureChange();
   }
 

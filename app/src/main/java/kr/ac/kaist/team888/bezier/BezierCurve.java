@@ -216,6 +216,38 @@ public class BezierCurve extends ParametricPolynomialCurve {
   }
 
   /**
+   * Sets points of the curve
+   *
+   * @param points new points
+   * @throws OutOfRangeException if order is not same to the previous order of the curve
+   */
+  public void setPoints(Vector2D[] points) throws OutOfRangeException {
+    MathUtils.checkNotNull(points);
+    final int order = points.length - 1;
+    if (order != this.order) {
+      throw new OutOfRangeException(order, this.order, this.order);
+    }
+    for (Vector2D point : points) {
+      MathUtils.checkNotNull(point);
+    }
+
+    // Copy points.
+    Vector2D[] copiedPoints = points.clone();
+    for (int i = 0; i <= order; i++) {
+      copiedPoints[i] = new Vector2D(1, copiedPoints[i]);
+    }
+
+    // Calculate coefficients.
+    double[][] coefficients = calculateCoefficients(copiedPoints);
+
+    // Save variables.
+    this.points = copiedPoints;
+    this.polynomials = new PolynomialFunction[2];
+    this.polynomials[0] = new PolynomialFunction(coefficients[0]);
+    this.polynomials[1] = new PolynomialFunction(coefficients[1]);
+  }
+
+  /**
    * Gets the start point.
    *
    * @return the start point
