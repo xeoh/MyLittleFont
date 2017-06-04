@@ -84,6 +84,7 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
     initialize();
 
     FeatureController.getInstance().registerOnFeatureChangeListener(this);
+    onFeatureChange();
   }
 
   /**
@@ -105,6 +106,7 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
 
     if (registerFeatureChangeListener) {
       FeatureController.getInstance().registerOnFeatureChangeListener(this);
+      onFeatureChange();
     }
   }
 
@@ -183,8 +185,6 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
         }
       }
     }
-
-    onFeatureChange();
   }
 
   private void calculateRegions() {
