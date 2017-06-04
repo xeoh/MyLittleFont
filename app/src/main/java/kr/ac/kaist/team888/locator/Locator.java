@@ -48,12 +48,14 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
 
   private ArrayList<Region> regions;
   private ArrayList<HangulCharacter> characters;
+  private ArrayList<ArrayList<ArrayList<BezierCurve>>> ariseData;
   private ArrayList<ArrayList<ArrayList<BezierCurve>>> flattenData;
   private ArrayList<ArrayList<ArrayList<BezierCurve>>> skeletonsData;
   private ArrayList<ArrayList<ArrayList<BezierCurve>>> processedData;
   private ArrayList<ArrayList<BezierCurve>> skeletons;
   private ArrayList<ArrayList<BezierCurve>> contours;
 
+  private boolean isArisable = false;
   private boolean isFlatable = false;
 
   private ArrayList<Path> contourPaths;
@@ -114,6 +116,10 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
         isFlatable = true;
       }
 
+      if (character.isArisable()) {
+        isArisable = true;
+      }
+
       for (ArrayList<ArrayList<BezierCurve>> skeleton : character.getSkeletons(i, characters)) {
         ArrayList<ArrayList<BezierCurve>> newSkeletonData = new ArrayList<>();
         for (ArrayList<BezierCurve> segment : skeleton) {
@@ -147,6 +153,29 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
             newSkeletonData.add(newSegment);
           }
           flattenData.add(newSkeletonData);
+        }
+      }
+    }
+
+    if (isArisable) {
+      ariseData = new ArrayList<>();
+
+      for (int i = 0; i < characters.size(); i++) {
+        HangulCharacter character = characters.get(i);
+        Region baseRegion = character.getRegion(-1, characters);
+        Region targetRegion = regions.get(i);
+
+        for (ArrayList<ArrayList<BezierCurve>> skeleton : character.getSkeletons(-1, characters)) {
+          ArrayList<ArrayList<BezierCurve>> newSkeletonData = new ArrayList<>();
+          for (ArrayList<BezierCurve> segment : skeleton) {
+            ArrayList<BezierCurve> newSegment = new ArrayList<>();
+            for (BezierCurve curve : segment) {
+              BezierCurve transformedCurve = baseRegion.transformBezierCurve(targetRegion, curve);
+              newSegment.add(transformedCurve);
+            }
+            newSkeletonData.add(newSegment);
+          }
+          ariseData.add(newSkeletonData);
         }
       }
     }
@@ -481,8 +510,8 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
     applyWidth(widthControl);
   }
 
-  public void applyFlattening(double flatteningControl) {
-    if (!isFlatable) {
+  public void manipulateSkeleton(double flatteningControl, double ariseControl) {
+    if (!isFlatable && !isArisable) {
       processedData = skeletonsData;
       return;
     }
@@ -499,14 +528,27 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
 
         for (int k = 0; k < segment.size(); k++) {
           BezierCurve fundamentalCurve = segment.get(k);
-          BezierCurve flattenCurve = flattenData.get(i).get(j).get(k);
 
-          if (BezierCurveUtils.comparePoints(fundamentalCurve, flattenCurve)) {
-            processedSegment.add(fundamentalCurve.clone());
+          if (isFlatable) {
+            BezierCurve flattenCurve = flattenData.get(i).get(j).get(k);
+            if (BezierCurveUtils.comparePoints(fundamentalCurve, flattenCurve)) {
+              processedSegment.add(fundamentalCurve.clone());
+            } else {
+              BezierCurve between = BezierCurveUtils.interpolate(
+                      fundamentalCurve, flattenCurve, flatteningControl);
+              processedSegment.add(between.clone());
+            }
+          } else if (isArisable) {
+            BezierCurve ariseCurve = ariseData.get(i).get(j).get(k);
+            if (BezierCurveUtils.comparePoints(fundamentalCurve, ariseCurve)) {
+              processedSegment.add(fundamentalCurve.clone());
+            } else {
+              BezierCurve between = BezierCurveUtils.interpolate(
+                      ariseCurve, fundamentalCurve, ariseControl);
+              processedSegment.add(between.clone());
+            }
           } else {
-            BezierCurve between = BezierCurveUtils.interpolate(
-                    fundamentalCurve, flattenCurve, flatteningControl);
-            processedSegment.add(between.clone());
+            // TODO: handle when character has flattenData & ariseData.
           }
         }
         processedSegments.add(processedSegment);
@@ -582,7 +624,7 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
 
   @Override
   public void onFeatureChange() {
-    applyFlattening(FeatureController.getInstance().getFlattening());
+    manipulateSkeleton(FeatureController.getInstance().getFlattening(), FeatureController.getInstance().getArise());
     applyCurve(FeatureController.getInstance().getCurve());
     applyWidth(FeatureController.getInstance().getWidth(), true);
     applyContour(FeatureController.getInstance().getWeight(),
