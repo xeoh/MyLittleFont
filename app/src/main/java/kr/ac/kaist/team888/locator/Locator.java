@@ -312,7 +312,7 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
           targetSegments--;
           target = processedData.get(targetSegments).size() - 1;
         } else {
-          target = index - processedData.get(targetSegments).size();
+          target = target - processedData.get(targetSegments).size();
           targetSegments++;
         }
       }
@@ -333,7 +333,7 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
           targetSegments--;
           target = processedData.get(targetSegments).size() - 1;
         } else {
-          target = index - processedData.get(targetSegments).size();
+          target = target - processedData.get(targetSegments).size();
           targetSegments++;
         }
       }
