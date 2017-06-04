@@ -36,16 +36,16 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
 
   private static final String TABLE_CREATE =
       "CREATE TABLE " + TABLE_NAME + " ("
-          + KEY_ID        + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-          + KEY_NAME      + " TEXT, "
-          + KEY_DATETIME  + " DATETIME DEFAULT CURRENT_TIMESTAMP, "
-          + KEY_CURVE     + " REAL, "
-          + KEY_ROUNDNESS + " REAL, "
-          + KEY_WEIGHT    + " REAL, "
-          + KEY_CONTRAST  + " REAL, "
-          + KEY_WIDTH     + " REAL, "
-          + KEY_FLATTENING + "REAL, "
-          + KEY_ARISE + "REAL);";
+          + KEY_ID          + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+          + KEY_NAME        + " TEXT, "
+          + KEY_DATETIME    + " DATETIME DEFAULT CURRENT_TIMESTAMP, "
+          + KEY_CURVE       + " REAL, "
+          + KEY_ROUNDNESS   + " REAL, "
+          + KEY_WEIGHT      + " REAL, "
+          + KEY_CONTRAST    + " REAL, "
+          + KEY_WIDTH       + " REAL, "
+          + KEY_FLATTENING  + " REAL, "
+          + KEY_ARISE       + " REAL);";
   private static final String TABLE_SELECT = "SELECT * FROM %s ORDER BY %s DESC";
   private static final String ROW_DELETE = "DELETE FROM %s WHERE %s=%d";
 
