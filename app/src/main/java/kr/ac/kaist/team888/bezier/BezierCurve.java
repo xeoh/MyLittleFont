@@ -24,6 +24,10 @@ public class BezierCurve extends ParametricPolynomialCurve {
   private BezierCurveOffsetMethodType offsetMethod;
   private Vector2D offsetVector = DEFAULT_OFFSET_VECTOR;
   private Vector2D endOffsetVector;
+  private int cutoffStart;
+  private int cutoffEnd;
+  private Vector2D cutoffStartVector;
+  private Vector2D cutoffEndVector;
 
   /**
    * Creates a new Bezier curve with given controlling points and sets a default offset method.
@@ -322,6 +326,78 @@ public class BezierCurve extends ParametricPolynomialCurve {
   }
 
   /**
+   * Returns the relatively index of the start cutoff of the curve.
+   *
+   * @return the start cutoff index
+   */
+  public int getCutoffStart() {
+    return cutoffStart;
+  }
+
+  /**
+   * Sets the relatively index of the start cutoff of the curve.
+   *
+   * @param index the start cutoff index
+   */
+  public void setCutoffStart(int index) {
+    this.cutoffStart = index;
+  }
+
+  /**
+   * Returns the relatively index of the end cutoff of the curve.
+   *
+   * @return the end cutoff index
+   */
+  public int getCutoffEnd() {
+    return cutoffEnd;
+  }
+
+  /**
+   * Sets the relatively index of the end cutoff of the curve.
+   *
+   * @param index the end cutoff index
+   */
+  public void setCutoffEnd(int index) {
+    this.cutoffEnd = index;
+  }
+
+  /**
+   * Returns the cutoff start vector of the curve.
+   *
+   * @return the cutoff start vector
+   */
+  public Vector2D getCutoffStartVector() {
+    return cutoffStartVector;
+  }
+
+  /**
+   * Sets the cutoff start vector of the curve.
+   *
+   * @param vector the cutoff start vector
+   */
+  public void setCutoffStartVector(Vector2D vector) {
+    this.cutoffStartVector = vector;
+  }
+
+  /**
+   * Returns the cutoff end vector of the curve.
+   *
+   * @return the cutoff end vector
+   */
+  public Vector2D getCutoffEndVector() {
+    return cutoffEndVector;
+  }
+
+  /**
+   * Sets the cutoff end vector of the curve.
+   *
+   * @param vector the cutoff end vector
+   */
+  public void setCutoffEndVector(Vector2D vector) {
+    this.cutoffEndVector = vector;
+  }
+
+  /**
    * Returns whether every points are collapsed or not.
    *
    * @return true if every points are collapsed, false otherwise
@@ -425,7 +501,12 @@ public class BezierCurve extends ParametricPolynomialCurve {
   @Override
   public BezierCurve clone() {
     BezierCurve curve = new BezierCurve(points, offsetMethod);
-    curve.setOffsetVector(offsetVector);
+    curve.offsetVector = offsetVector;
+    curve.endOffsetVector = endOffsetVector;
+    curve.cutoffStart = cutoffStart;
+    curve.cutoffEnd = cutoffEnd;
+    curve.cutoffStartVector = cutoffStartVector;
+    curve.cutoffEndVector = cutoffEndVector;
     return curve;
   }
 
@@ -438,6 +519,10 @@ public class BezierCurve extends ParametricPolynomialCurve {
     private Vector2D[] points;
     private Vector2D offsetVector;
     private Vector2D endOffsetVector;
+    private int cutoffStart;
+    private int cutoffEnd;
+    private Vector2D cutoffStartVector;
+    private Vector2D cutoffEndVector;
 
     /**
      * Sets the points.
@@ -473,14 +558,62 @@ public class BezierCurve extends ParametricPolynomialCurve {
     }
 
     /**
+     * Sets the relatively index of the start cutoff of the curve.
+     *
+     * @param index the start cutoff index
+     * @return this builder, useful for chaining
+     */
+    public Builder setCutoffStart(int index) {
+      this.cutoffStart = index;
+      return this;
+    }
+
+    /**
+     * Sets the relatively index of the end cutoff of the curve.
+     *
+     * @param index the end cutoff index
+     * @return this builder, useful for chaining
+     */
+    public Builder setCutoffEnd(int index) {
+      this.cutoffEnd = index;
+      return this;
+    }
+
+    /**
+     * Sets the cutoff start vector of the curve.
+     *
+     * @param vector the cutoff start vector
+     * @return this builder, useful for chaining
+     */
+    public Builder setCutoffStartVector(Vector2D vector) {
+      this.cutoffStartVector = vector;
+      return this;
+    }
+
+    /**
+     * Sets the cutoff end vector of the curve.
+     *
+     * @param vector the cutoff end vector
+     * @return this builder, useful for chaining
+     */
+    public Builder setCutoffEndVector(Vector2D vector) {
+      this.cutoffEndVector = vector;
+      return this;
+    }
+
+    /**
      * Build the {@link BezierCurve} after options have been set.
      *
      * @return the newly constructed {@link BezierCurve} object
      */
     public BezierCurve build() {
       BezierCurve curve = new BezierCurve(points);
-      curve.setOffsetVector(offsetVector);
-      curve.setEndOffsetVector(endOffsetVector);
+      curve.offsetVector = offsetVector;
+      curve.endOffsetVector = endOffsetVector;
+      curve.cutoffStart = cutoffStart;
+      curve.cutoffEnd = cutoffEnd;
+      curve.cutoffStartVector = cutoffStartVector;
+      curve.cutoffEndVector = cutoffEndVector;
       return curve;
     }
   }

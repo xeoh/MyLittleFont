@@ -14,6 +14,8 @@ import kr.ac.kaist.team888.util.FeatureController;
 import kr.ac.kaist.team888.util.HangulDecomposer;
 import kr.ac.kaist.team888.util.JsonLoader;
 
+import org.apache.commons.math3.analysis.UnivariateFunction;
+import org.apache.commons.math3.analysis.solvers.BisectionSolver;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
 import java.lang.reflect.Type;
@@ -35,6 +37,8 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
   private static final double WIDTH_MIN = 0.7;
   private static final double WIDTH_MAX = 1.3;
   private static final int PRIORITY = 1;
+
+  private static final int NEWTON_MAX_EVAL = 100000;
 
   public static Region globalLocatorRegion = new Region(HangulCharacter.ORIGIN_REGION.getMinX(),
       HangulCharacter.ORIGIN_REGION.getMaxX(),
@@ -295,6 +299,109 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
     return time;
   }
 
+  private void adjustEndExtension(int segmentsIndex, int index) {
+    ArrayList<ArrayList<BezierCurve>> segments = processedData.get(segmentsIndex);
+    ArrayList<BezierCurve> segment = segments.get(index);
+    BezierCurve startCurve = segment.get(0);
+    BezierCurve endCurve = segment.get(segment.size() - 1);
+    if (startCurve.getCutoffStart() != 0) {
+      int targetSegments = segmentsIndex;
+      int target = index + startCurve.getCutoffStart();
+      while (target < 0 || target >= processedData.get(targetSegments).size()) {
+        if (target < 0) {
+          targetSegments--;
+          target = processedData.get(targetSegments).size() - 1;
+        } else {
+          target = index - processedData.get(targetSegments).size();
+          targetSegments++;
+        }
+      }
+      Vector2D adjustPoint = adjustEndExtension(startCurve,
+          processedData.get(targetSegments).get(target), true);
+      segment.add(0, new BezierCurve.Builder()
+          .setPoints(new Vector2D[] {adjustPoint, segment.get(0).getStartPoint()})
+          .setOffsetVector(segment.get(0).getOffsetVector())
+          .setCutoffStartVector(startCurve.getCutoffStartVector())
+          .build());
+      startCurve.setCutoffStartVector(null);
+    }
+    if (endCurve.getCutoffEnd() != 0) {
+      int targetSegments = segmentsIndex;
+      int target = index + endCurve.getCutoffEnd();
+      while (target < 0 || target >= processedData.get(targetSegments).size()) {
+        if (target < 0) {
+          targetSegments--;
+          target = processedData.get(targetSegments).size() - 1;
+        } else {
+          target = index - processedData.get(targetSegments).size();
+          targetSegments++;
+        }
+      }
+      Vector2D adjustPoint = adjustEndExtension(segment.get(segment.size() - 1),
+          processedData.get(targetSegments).get(target), false);
+      Vector2D offsetVector = endCurve.getEndOffsetVector();
+      if (offsetVector == null) {
+        offsetVector = endCurve.getOffsetVector();
+      }
+      segment.add(new BezierCurve.Builder()
+          .setPoints(new Vector2D[] {endCurve.getEndPoint(), adjustPoint})
+          .setOffsetVector(offsetVector)
+          .setCutoffEndVector(endCurve.getCutoffEndVector())
+          .build());
+      endCurve.setCutoffEndVector(null);
+    }
+  }
+
+  private Vector2D adjustEndExtension(final BezierCurve curve, final ArrayList<BezierCurve> segment,
+                                      boolean order) {
+    // Fetch points
+    final Vector2D startPoint;
+    final Vector2D endPoint;
+    if (order) {
+      startPoint = curve.getPoint(1);
+      endPoint = curve.getStartPoint();
+    } else {
+      startPoint = curve.getPoint(curve.getOrder() - 1);
+      endPoint = curve.getEndPoint();
+    }
+
+    // Generate function
+    UnivariateFunction function = new UnivariateFunction() {
+      @Override
+      public double value(double time) {
+        int targetIndex = Math.max(0, Math.min(segment.size() - 1, (int) time));
+        BezierCurve targetCurve = segment.get(targetIndex);
+        double[] values = targetCurve.value(time - targetIndex);
+        if (startPoint.getX() == endPoint.getX()) {
+          return values[0] - startPoint.getX();
+        }
+        double c1 = (startPoint.getY() - endPoint.getY()) / (startPoint.getX() - endPoint.getX());
+        double c0 = startPoint.getY() - c1 * startPoint.getX();
+        return c1 * values[0] + c0 - values[1];
+      }
+    };
+
+    // Find root
+    double time = new BisectionSolver().solve(NEWTON_MAX_EVAL, function, 0, segment.size());
+
+    // Fetch target curve
+    int targetIndex = Math.max(0, Math.min(segment.size() - 1, (int) time));
+    BezierCurve targetCurve = segment.get(targetIndex);
+    double targetTime = time - targetIndex;
+    Vector2D cutoffVector = new Vector2D(targetCurve.perpendicular().value(targetTime));
+    if (cutoffVector.dotProduct(endPoint.subtract(startPoint)) < 0) {
+      cutoffVector = cutoffVector.scalarMultiply(-1);
+    }
+
+    // Save result
+    if (order) {
+      curve.setCutoffStartVector(cutoffVector);
+    } else {
+      curve.setCutoffEndVector(cutoffVector);
+    }
+    return new Vector2D(targetCurve.value(targetTime));
+  }
+
   private BezierCurve adjustJoint(BezierCurve joint, BezierCurve leftCurve,
                                   BezierCurve rightCurve, double offset) {
     Vector2D startVector = joint.getStartPoint()
@@ -344,10 +451,12 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
     skeletons = new ArrayList<>();
     // Omit creating joints and appending curve if offset is just 0
     if (offset == 0) {
-      for (ArrayList<ArrayList<BezierCurve>> segments : processedData) {
+      for (int i = 0; i < processedData.size(); i++) {
+        ArrayList<ArrayList<BezierCurve>> segments = processedData.get(i);
         ArrayList<BezierCurve> skeleton = new ArrayList<BezierCurve>();
-        for (ArrayList<BezierCurve> segment : segments) {
-          for (BezierCurve curve : segment) {
+        for (int j = 0; j < segments.size(); j++) {
+          adjustEndExtension(i, j);
+          for (BezierCurve curve : segments.get(j)) {
             skeleton.add(curve.clone());
           }
         }
@@ -356,7 +465,8 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
       return;
     }
 
-    for (ArrayList<ArrayList<BezierCurve>> segments : processedData) {
+    for (int segmentsIndex = 0; segmentsIndex < processedData.size(); segmentsIndex++) {
+      ArrayList<ArrayList<BezierCurve>> segments = processedData.get(segmentsIndex);
       ArrayList<BezierCurve> skeleton = new ArrayList<>();
       for (int i = 0; i < segments.size(); i++) {
         // Clone the segment data
@@ -365,6 +475,8 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
         for (BezierCurve curve : segmentData) {
           segment.add(curve.clone());
         }
+
+        adjustEndExtension(segmentsIndex, i);
 
         // Fetch joints information
         ArrayList<BezierCurve> leftSegment = segments.get(i == 0 ? segments.size() - 1 : i - 1);
@@ -543,6 +655,8 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
             } else {
               BezierCurve between = BezierCurveUtils.interpolate(
                       fundamentalCurve, flattenCurve, flatteningControl);
+              between.setCutoffStart(fundamentalCurve.getCutoffStart());
+              between.setCutoffEnd(fundamentalCurve.getCutoffEnd());
               processedSegment.add(between);
             }
           } else if (isArisable) {
@@ -552,6 +666,8 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
             } else {
               BezierCurve between = BezierCurveUtils.interpolate(
                       ariseCurve, fundamentalCurve, ariseControl);
+              between.setCutoffStart(fundamentalCurve.getCutoffStart());
+              between.setCutoffEnd(fundamentalCurve.getCutoffEnd());
               processedSegment.add(between);
             }
           } else {
