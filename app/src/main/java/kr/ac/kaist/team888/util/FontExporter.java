@@ -78,10 +78,11 @@ public class FontExporter extends AsyncTask<String, Double, File> {
 
   private String makeFontData(char letter) {
     Locator locator = new Locator(letter, false);
+
     locator.manipulateSkeleton(flattening, arise);
-    locator.applyContour(weight, roundness, contrast);
     locator.applyCurve(curve);
     locator.applyWidth(width);
+    locator.applyContour(weight, roundness, contrast);
 
     double regionWidth = locator.locatorRegion.getMaxX()
         - locator.locatorRegion.getMinX();
