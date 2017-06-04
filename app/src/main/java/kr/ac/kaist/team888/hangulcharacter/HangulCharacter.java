@@ -6,6 +6,7 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.google.gson.reflect.TypeToken;
 
 import kr.ac.kaist.team888.bezier.BezierCurve;
@@ -47,6 +48,8 @@ public abstract class HangulCharacter implements FeatureController.OnFeatureChan
   protected JsonObject data;
 
   private final HashMap<Collection<Vector2D>, Vector2D> offsetVectorMap = new HashMap<>();
+  private final HashMap<Collection<Vector2D>, Integer> cutoffStartMap = new HashMap<>();
+  private final HashMap<Collection<Vector2D>, Integer> cutoffEndMap = new HashMap<>();
 
   /**
    * Super class constructor.
@@ -79,6 +82,17 @@ public abstract class HangulCharacter implements FeatureController.OnFeatureChan
                   weight.getAsJsonPrimitive("vertical").getAsDouble() / DEFAULT_OFFSET
               );
               offsetVectorMap.put(points, offsetVector);
+            }
+            JsonObject cutoff = json.getAsJsonObject().getAsJsonObject("cutoff");
+            if (cutoff != null) {
+              JsonPrimitive cutoffStart = cutoff.getAsJsonPrimitive("start");
+              JsonPrimitive cutoffEnd = cutoff.getAsJsonPrimitive("end");
+              if (cutoffStart != null) {
+                cutoffStartMap.put(points, cutoffStart.getAsInt());
+              }
+              if (cutoffEnd != null) {
+                cutoffEndMap.put(points, cutoffEnd.getAsInt());
+              }
             }
             return points;
           }});
@@ -141,6 +155,14 @@ public abstract class HangulCharacter implements FeatureController.OnFeatureChan
           for (BezierCurve curve : segment) {
             curve.setOffsetVector(offsetVector);
           }
+        }
+        Integer cutoffStart = cutoffStartMap.get(points);
+        Integer cutoffEnd = cutoffEndMap.get(points);
+        if (cutoffStart != null) {
+          segment.get(0).setCutoffStart(cutoffStart);
+        }
+        if (cutoffEnd != null) {
+          segment.get(segment.size() - 1).setCutoffEnd(cutoffEnd);
         }
         skeletonsData.get(i).add(segment);
       }

@@ -78,8 +78,17 @@ class OffsetTillerHanson {
       joinTwoHalfContours(lastBasePoint, lastPrevPoint, firstNextPoint, contour, delta, contrast,
           lastBaseCurve.getOffsetVector(), firstBaseCurve.getOffsetVector());
     } else {
-      joinTwoHalfContours(lastBasePoint, lastPrevPoint, contour, delta, roundness, contrast,
-          lastBaseCurve.getOffsetVector());
+      if (lastBaseCurve.getCutoffEndVector() == null) {
+        joinTwoHalfContours(lastBasePoint, lastPrevPoint, contour, delta, roundness, contrast,
+            lastBaseCurve.getOffsetVector());
+      } else {
+        BezierCurve positiveCurve = contourUpper.get(contourUpper.size() - 1);
+        BezierCurve negativeCurve = contourLower.get(0);
+        Vector2D diffVector = joinTwoHalfContours(lastBasePoint, lastPrevPoint, contour, delta,
+            contrast, lastBaseCurve.getOffsetVector(), lastBaseCurve.getCutoffEndVector());
+        positiveCurve.setEndPoint(positiveCurve.getEndPoint().add(diffVector));
+        negativeCurve.setStartPoint(negativeCurve.getStartPoint().add(-1, diffVector));
+      }
     }
 
 
@@ -96,8 +105,17 @@ class OffsetTillerHanson {
       joinTwoHalfContours(firstBasePoint, firstNextPoint, lastPrevPoint, contour, delta, contrast,
           firstBaseCurve.getOffsetVector(), lastBaseCurve.getOffsetVector());
     } else {
-      joinTwoHalfContours(firstBasePoint, firstNextPoint, contour, delta, roundness, contrast,
-          firstBaseCurve.getOffsetVector());
+      if (firstBaseCurve.getCutoffStartVector() == null) {
+        joinTwoHalfContours(firstBasePoint, firstNextPoint, contour, delta, roundness, contrast,
+            firstBaseCurve.getOffsetVector());
+      } else {
+        BezierCurve positiveCurve = contourLower.get(contourUpper.size() - 1);
+        BezierCurve negativeCurve = contourUpper.get(0);
+        Vector2D diffVector = joinTwoHalfContours(firstBasePoint, firstNextPoint, contour, delta,
+            contrast, firstBaseCurve.getOffsetVector(), firstBaseCurve.getCutoffStartVector());
+        positiveCurve.setEndPoint(positiveCurve.getEndPoint().add(diffVector));
+        negativeCurve.setStartPoint(negativeCurve.getStartPoint().add(-1, diffVector));
+      }
     }
 
     return contour;
@@ -188,6 +206,28 @@ class OffsetTillerHanson {
         .setPoints(new Vector2D[] {roundPoints[1][0], joiningPoints[3]})
         .setOffsetVector(offsetVector)
         .build());
+  }
+
+  private static Vector2D joinTwoHalfContours(Vector2D basePoint, Vector2D prevPoint,
+                                          ArrayList<BezierCurve> contour,
+                                          double delta, double contrast,
+                                          Vector2D offsetVector, Vector2D cutoffVector) {
+    Vector2D direction = basePoint.subtract(prevPoint).normalize();
+    double offsetLength = delta * getOffsetTargetVector(
+        new Vector2D(-direction.getY(), direction.getX()), contrast, offsetVector).getNorm();
+    double distance = offsetLength
+        * (direction.getX() * cutoffVector.getY() - direction.getY() * cutoffVector.getX())
+        / direction.dotProduct(cutoffVector);
+    contour.add(new BezierCurve.Builder()
+        .setPoints(new Vector2D[] {
+            offsetPoint(basePoint, null, prevPoint, -delta, contrast, offsetVector)
+                .add(distance, direction),
+            offsetPoint(basePoint, null, prevPoint, delta, contrast, offsetVector)
+                .add(-distance, direction)
+        })
+        .setOffsetVector(offsetVector)
+        .build());
+    return direction.scalarMultiply(distance);
   }
 
   private static void joinTwoHalfContours(Vector2D basePoint, Vector2D prevPoint,

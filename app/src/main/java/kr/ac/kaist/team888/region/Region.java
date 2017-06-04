@@ -137,6 +137,10 @@ public class Region {
         .setPoints(transformedPoints)
         .setOffsetVector(curve.getOffsetVector())
         .setEndOffsetVector(curve.getEndOffsetVector())
+        .setCutoffStart(curve.getCutoffStart())
+        .setCutoffEnd(curve.getCutoffEnd())
+        .setCutoffStartVector(curve.getCutoffStartVector())
+        .setCutoffEndVector(curve.getCutoffEndVector())
         .build();
   }
 
