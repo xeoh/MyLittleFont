@@ -5,8 +5,10 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.annotation.IdRes;
 import android.support.annotation.Nullable;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -17,6 +19,9 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ProgressBar;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -24,6 +29,7 @@ import android.widget.TextView;
 import kr.ac.kaist.team888.hangulcharacter.CharacterLoader;
 import kr.ac.kaist.team888.locator.Locator;
 import kr.ac.kaist.team888.util.FeatureController;
+import kr.ac.kaist.team888.util.FontExporter;
 import kr.ac.kaist.team888.util.ViewContainer;
 
 import java.io.File;
@@ -41,6 +47,9 @@ public class FontMakerFragment extends Fragment {
   private EditText sampleTextInput;
   private String drawingText;
   private ArrayList<Locator> locators;
+
+  private FontExporter fontExporter;
+  private ProgressBar exportProgressBar;
 
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -185,6 +194,14 @@ public class FontMakerFragment extends Fragment {
         }
       }
     });
+
+    Button exportTtfBtn = (Button) view.getRootView().findViewById(R.id.export_ttf);
+    exportTtfBtn.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        checkExportFont();
+      }
+    });
   }
 
   @Override
@@ -303,6 +320,132 @@ public class FontMakerFragment extends Fragment {
         FeatureController.getInstance().setSlant(value);
       }
     };
+  }
+
+  private void checkExportFont() {
+    if (fontExporter == null) {
+      exportFont();
+      return;
+    }
+
+    AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getContext());
+    dialogBuilder.setTitle(R.string.feature_export_warning);
+    dialogBuilder.setMessage(R.string.feature_export_already_in_progress);
+    dialogBuilder.setPositiveButton(R.string.feature_export_ok,
+        new DialogInterface.OnClickListener() {
+          @Override
+          public void onClick(DialogInterface dialog, int which) {
+            if (fontExporter != null) {
+              fontExporter.cancel(true);
+              fontExporter = null;
+              exportProgressBar.setVisibility(View.INVISIBLE);
+              exportFont();
+            }
+          }
+        });
+    dialogBuilder.setNegativeButton(R.string.feature_export_cancel,
+        new DialogInterface.OnClickListener() {
+          @Override
+          public void onClick(DialogInterface dialog, int which) {
+            dialog.dismiss();
+          }
+        });
+
+    AlertDialog dialog = dialogBuilder.create();
+    dialog.show();
+  }
+
+  private void exportFont() {
+    exportProgressBar = (ProgressBar) getView().findViewById(R.id.export_progress);
+
+    AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getContext());
+    dialogBuilder.setTitle(R.string.feature_export);
+    dialogBuilder.setView(R.layout.export_dialog);
+    dialogBuilder.setCancelable(false);
+    dialogBuilder.setPositiveButton(R.string.feature_export, null);
+    dialogBuilder.setNegativeButton(R.string.feature_export_cancel, null);
+
+    final AlertDialog dialog = dialogBuilder.create();
+    dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+      @Override
+      public void onShow(final DialogInterface dialog) {
+        final AlertDialog alertDialog = (AlertDialog) dialog;
+
+        RadioGroup exportOption = (RadioGroup) alertDialog.findViewById(R.id.export_option);
+        final RadioButton partial = (RadioButton) alertDialog.findViewById(R.id.export_partial);
+        final RadioButton all = (RadioButton) alertDialog.findViewById(R.id.export_all);
+
+        exportOption.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+          @Override
+          public void onCheckedChanged(RadioGroup group, @IdRes int checkedId) {
+            switch (checkedId) {
+              case R.id.export_partial:
+                partial.setChecked(true);
+                all.setChecked(false);
+                break;
+              case R.id.export_all:
+                partial.setChecked(false);
+                all.setChecked(true);
+                break;
+              default:
+                break;
+            }
+          }
+        });
+
+        Button posBtn = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE);
+        posBtn.setOnClickListener(new View.OnClickListener() {
+          @Override
+          public void onClick(View view) {
+            String fontName = ((EditText) alertDialog.findViewById(R.id.export_name))
+                .getText().toString();
+
+            exportProgressBar.setVisibility(View.VISIBLE);
+            exportProgressBar.setProgress(0);
+
+            RadioButton partial = (RadioButton) alertDialog.findViewById(R.id.export_partial);
+
+            FontExporter.ExportCallbacks exportCallbacks = new FontExporter.ExportCallbacks() {
+              @Override
+              public void onProgress(double value) {
+                int percent = (int)(value * 100);
+                exportProgressBar.setProgress(percent);
+              }
+
+              @Override
+              public void onEnd(File file) {
+                fontExporter = null;
+                exportProgressBar.setVisibility(View.INVISIBLE);
+
+                AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getContext());
+                if (file == null) {
+                  dialogBuilder.setMessage("Fail to export");
+                } else {
+                  dialogBuilder.setMessage(String.format("Export Finished: %s", file.getName()));
+                }
+                AlertDialog dialog = dialogBuilder.create();
+                dialog.show();
+              }
+            };
+
+            if (partial.isChecked()) {
+              fontExporter = new FontExporter(FontExporter.ExportType.PARTIAL, fontName,
+                  exportCallbacks);
+              fontExporter.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+              alertDialog.dismiss();
+            } else {
+              fontExporter = new FontExporter(FontExporter.ExportType.ALL, fontName,
+                  exportCallbacks);
+              fontExporter.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+              alertDialog.dismiss();
+            }
+          }
+        });
+
+      }
+    });
+
+    dialog.show();
   }
 
   private abstract class SeekBarContainer extends ViewContainer<SeekBar> {

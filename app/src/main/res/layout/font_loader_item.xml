@@ -9,7 +9,7 @@
     <RelativeLayout
         android:padding="16dp"
         android:layout_height="120dp"
-        app:layout_widthPercent="30%">
+        app:layout_widthPercent="40%">
 
         <kr.ac.kaist.team888.mylittlefont.FontCanvasView
             android:id="@+id/fontCanvasItem"
@@ -23,8 +23,8 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:padding="16dp"
-        app:layout_marginLeftPercent="30%"
-        app:layout_widthPercent="70%">
+        app:layout_marginLeftPercent="40%"
+        app:layout_widthPercent="60%">
 
         <FrameLayout
             android:layout_width="match_parent"

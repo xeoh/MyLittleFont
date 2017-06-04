@@ -19,10 +19,6 @@
                 android:icon="@drawable/ic_menu_about"
                 android:title="About Us" />
             <item
-                android:id="@+id/nav_license"
-                android:icon="@drawable/ic_menu_license"
-                android:title="License" />
-            <item
                 android:id="@+id/nav_github"
                 android:icon="@drawable/ic_menu_github"
                 android:title="Github" />

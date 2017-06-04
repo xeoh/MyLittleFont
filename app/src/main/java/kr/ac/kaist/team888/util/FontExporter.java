@@ -21,7 +21,7 @@ import java.util.ArrayList;
 
 public class FontExporter extends AsyncTask<String, Double, File> {
   private static final String DEFAULT_FILE_PATH = "/MyLittleFont/";
-  private static final String IP = "172.30.1.43";
+  private static final String IP = "143.248.199.15";
   private static final int PORT = 3000;
 
   private static final int HANGUL_COMPATIBILITY_JAMO_START = 0x3130;

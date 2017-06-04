@@ -8,10 +8,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.support.annotation.IdRes;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -27,18 +25,12 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.ProgressBar;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import kr.ac.kaist.team888.util.DatabaseOpenHelper;
 import kr.ac.kaist.team888.util.FeatureController;
-import kr.ac.kaist.team888.util.FontExporter;
-
-import java.io.File;
 
 public class MainActivity extends AppCompatActivity
     implements NavigationView.OnNavigationItemSelectedListener {
@@ -46,16 +38,11 @@ public class MainActivity extends AppCompatActivity
   private static final int PERMISSIONS_REQUEST_EXTERNAL_STORAGE = 0;
   private static final String PERMISSION_DENIED_TITLE = "Permission Denied";
   private static final String PERMISSION_DENIED_MSG = "Please allow external storage permission.";
+  private static final String GITHUB_URL = "https://github.com/MyLittleFont/MyLittleFont";
 
   private FontMakerFragment fontMakerFragment;
   private FontViewerFragment fontViewerFragment;
   private DatabaseOpenHelper db;
-
-  private FontExporter fontExporter;
-  private View exportLayout;
-  private ProgressBar exportProgressBar;
-  private TextView exportProgressText;
-  private TextView exportProgressTitle;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -111,9 +98,6 @@ public class MainActivity extends AppCompatActivity
       case R.id.action_load:
         loadFeatureValues();
         return true;
-      case R.id.action_export:
-        checkExportFont();
-        return true;
       default:
         return super.onOptionsItemSelected(item);
     }
@@ -122,15 +106,22 @@ public class MainActivity extends AppCompatActivity
   @SuppressWarnings("StatementWithEmptyBody")
   @Override
   public boolean onNavigationItemSelected(MenuItem item) {
-    // Handle navigation view item clicks here.
-    int id = item.getItemId();
-
-    if (id == R.id.nav_font_maker) {
-      changeFragment(fontMakerFragment);
-    } else if (id == R.id.nav_font_viewer) {
-      changeFragment(fontViewerFragment);
-    } else {
-      // do nothing
+    switch (item.getItemId()) {
+      case R.id.nav_font_maker:
+        changeFragment(fontMakerFragment);
+        break;
+      case R.id.nav_font_viewer:
+        changeFragment(fontViewerFragment);
+        break;
+      case R.id.nav_about:
+        aboutus();
+        break;
+      case R.id.nav_github:
+        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_URL));
+        startActivity(browserIntent);
+        break;
+      default:
+        break;
     }
 
     DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -210,145 +201,10 @@ public class MainActivity extends AppCompatActivity
     dialog.show();
   }
 
-  private void checkExportFont() {
-    if (fontExporter == null) {
-      exportFont();
-      return;
-    }
-
-    AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
-    dialogBuilder.setTitle(R.string.feature_export_warning);
-    dialogBuilder.setMessage(R.string.feature_export_already_in_progress);
-    dialogBuilder.setPositiveButton(R.string.feature_export_ok,
-        new DialogInterface.OnClickListener() {
-          @Override
-          public void onClick(DialogInterface dialog, int which) {
-            if (fontExporter != null) {
-              fontExporter.cancel(true);
-              fontExporter = null;
-              exportLayout.setVisibility(View.INVISIBLE);
-              exportFont();
-            }
-          }
-        });
-    dialogBuilder.setNegativeButton(R.string.feature_export_cancel,
-        new DialogInterface.OnClickListener() {
-          @Override
-          public void onClick(DialogInterface dialog, int which) {
-            dialog.dismiss();
-          }
-        });
-
-    AlertDialog dialog = dialogBuilder.create();
-    dialog.show();
-  }
-
-  private void exportFont() {
-    exportLayout = findViewById(R.id.export_layout);
-    exportProgressBar = (ProgressBar) findViewById(R.id.export_progress);
-    exportProgressText = (TextView) findViewById(R.id.export_percent);
-    exportProgressTitle = (TextView) findViewById(R.id.export_title);
-
-    AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
-    dialogBuilder.setTitle(R.string.feature_export);
-    dialogBuilder.setView(R.layout.export_dialog);
-    dialogBuilder.setCancelable(false);
-    dialogBuilder.setPositiveButton(R.string.feature_export, null);
-    dialogBuilder.setNegativeButton(R.string.feature_export_cancel, null);
-
-    final AlertDialog dialog = dialogBuilder.create();
-    dialog.setOnShowListener(new DialogInterface.OnShowListener() {
-      @Override
-      public void onShow(final DialogInterface dialog) {
-        final AlertDialog alertDialog = (AlertDialog) dialog;
-
-        RadioGroup exportOption = (RadioGroup) alertDialog.findViewById(R.id.export_option);
-        final RadioButton partial = (RadioButton) alertDialog.findViewById(R.id.export_partial);
-        final RadioButton all = (RadioButton) alertDialog.findViewById(R.id.export_all);
-
-        exportOption.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-          @Override
-          public void onCheckedChanged(RadioGroup group, @IdRes int checkedId) {
-            switch (checkedId) {
-              case R.id.export_partial:
-                partial.setChecked(true);
-                all.setChecked(false);
-                break;
-              case R.id.export_all:
-                partial.setChecked(false);
-                all.setChecked(true);
-                break;
-              default:
-                break;
-            }
-          }
-        });
-
-        Button posBtn = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE);
-        posBtn.setOnClickListener(new View.OnClickListener() {
-          @Override
-          public void onClick(View view) {
-            String fontName = ((EditText) alertDialog.findViewById(R.id.export_name))
-                .getText().toString();
-
-            exportLayout.setVisibility(View.VISIBLE);
-            exportProgressTitle.setText(String.format("Exporting: %s.ttf", fontName));
-            exportProgressBar.setProgress(0);
-            exportProgressText.setText(String.format("%d%%", 0));
-
-            RadioButton partial = (RadioButton) alertDialog.findViewById(R.id.export_partial);
-
-            FontExporter.ExportCallbacks exportCallbacks = new FontExporter.ExportCallbacks() {
-              @Override
-              public void onProgress(double value) {
-                int percent = (int)(value * 100);
-                exportProgressBar.setProgress(percent);
-                exportProgressText.setText(String.format("%d%%", percent));
-              }
-
-              @Override
-              public void onEnd(File file) {
-                fontExporter = null;
-                exportLayout.setVisibility(View.INVISIBLE);
-
-                AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(MainActivity.this);
-                if (file == null) {
-                  dialogBuilder.setMessage("Fail to export");
-                } else {
-                  dialogBuilder.setMessage(String.format("Export Finished: %s", file.getName()));
-                }
-                AlertDialog dialog = dialogBuilder.create();
-                dialog.show();
-              }
-            };
-
-            if (partial.isChecked()) {
-              fontExporter = new FontExporter(FontExporter.ExportType.PARTIAL, fontName,
-                  exportCallbacks);
-              fontExporter.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-              alertDialog.dismiss();
-            } else {
-              fontExporter = new FontExporter(FontExporter.ExportType.ALL, fontName,
-                  exportCallbacks);
-              fontExporter.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-              alertDialog.dismiss();
-            }
-          }
-        });
-
-      }
-    });
-
-    dialog.show();
-  }
-
   private void saveFeatureValues() {
-    final EditText nameInput = new EditText(this);
-    nameInput.setSingleLine();
-
     AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
-    dialogBuilder.setTitle(R.string.feature_save_name);
-    dialogBuilder.setView(nameInput);
+    dialogBuilder.setTitle(R.string.feature_save);
+    dialogBuilder.setView(R.layout.save_dialog);
     dialogBuilder.setPositiveButton(R.string.feature_save, null);
     dialogBuilder.setNegativeButton(R.string.feature_save_cancel,
         new DialogInterface.OnClickListener() {
@@ -366,6 +222,7 @@ public class MainActivity extends AppCompatActivity
         button.setOnClickListener(new View.OnClickListener() {
           @Override
           public void onClick(View view) {
+            EditText nameInput = (EditText) ((AlertDialog) dialog).findViewById(R.id.save_name);
             String name = nameInput.getText().toString();
             // Name should not be empty.
             if (name.isEmpty()) {
@@ -418,5 +275,16 @@ public class MainActivity extends AppCompatActivity
     });
 
     dialog.show();
+  }
+
+  private void aboutus() {
+    ImageView imageView = new ImageView(this);
+    imageView.setImageDrawable(getDrawable(R.drawable.about_us));
+    imageView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+    imageView.setAdjustViewBounds(true);
+
+    AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+    dialogBuilder.setView(imageView);
+    dialogBuilder.show();
   }
 }

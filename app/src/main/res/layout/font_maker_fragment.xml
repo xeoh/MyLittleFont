@@ -7,148 +7,185 @@
 
     <LinearLayout
         android:orientation="vertical"
-        app:layout_widthPercent="30%"
+        app:layout_widthPercent="10%"
         app:layout_heightPercent="100%"
-        android:background="#bbbbbb">
+        app:layout_marginLeftPercent="70%"
+        android:background="@color/colorBiright">
 
         <TextView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="30dp"
+            android:gravity="start|center_vertical"
             android:layout_margin="10dp"
+            android:textSize="16sp"
             android:text="Curve"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:gravity="start|center_vertical"
+            android:layout_margin="10dp"
+            android:textSize="16sp"
+            android:text="Roundness"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:gravity="start|center_vertical"
+            android:layout_margin="10dp"
+            android:textSize="16sp"
+            android:text="Weight"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:gravity="start|center_vertical"
+            android:layout_margin="10dp"
+            android:textSize="16sp"
+            android:text="Contrast"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:gravity="start|center_vertical"
+            android:layout_margin="10dp"
+            android:textSize="16sp"
+            android:text="Width"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:gravity="start|center_vertical"
+            android:layout_margin="10dp"
+            android:textSize="16sp"
+            android:text="Flattening"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:gravity="start|center_vertical"
+            android:layout_margin="10dp"
+            android:textSize="16sp"
+            android:text="Arise"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:gravity="start|center_vertical"
+            android:layout_margin="10dp"
+            android:textSize="16sp"
+            android:text="Slant"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
+        app:layout_widthPercent="20%"
+        app:layout_heightPercent="100%"
+        app:layout_marginLeftPercent="80%"
+        android:background="@color/colorBiright">
 
         <SeekBar
             android:id="@+id/curveControl"
-            android:layout_margin="5dp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingTop="10dp"
-            android:paddingBottom="10dp"
-            android:progress="50"/>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="30dp"
             android:layout_margin="10dp"
-            android:text="Roundness"/>
+            android:progress="50"/>
 
         <SeekBar
             android:id="@+id/roundnessControl"
-            android:layout_margin="5dp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingTop="10dp"
-            android:paddingBottom="10dp"
-            android:progress="50"/>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="30dp"
             android:layout_margin="10dp"
-            android:text="Weight"/>
+            android:progress="50"/>
 
         <SeekBar
             android:id="@+id/weightControl"
-            android:layout_margin="5dp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingTop="10dp"
-            android:paddingBottom="10dp"
-            android:progress="50"/>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="30dp"
             android:layout_margin="10dp"
-            android:text="Contrast"/>
+            android:progress="50"/>
 
         <SeekBar
             android:id="@+id/contrastControl"
-            android:layout_margin="5dp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingTop="10dp"
-            android:paddingBottom="10dp"
-            android:progress="50"/>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="30dp"
             android:layout_margin="10dp"
-            android:text="Width"/>
+            android:progress="50"/>
 
         <SeekBar
             android:id="@+id/widthControl"
-            android:layout_margin="5dp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingBottom="10dp"
-            android:paddingTop="10dp"
-            android:progress="50"/>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="30dp"
             android:layout_margin="10dp"
-            android:text="Flattening"/>
+            android:progress="50"/>
 
         <SeekBar
             android:id="@+id/flatteningControl"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            android:paddingBottom="10dp"
-            android:paddingTop="10dp"
-            android:progress="50"/>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="30dp"
             android:layout_margin="10dp"
-            android:text="Arise"/>
+            android:progress="50"/>
 
         <SeekBar
             android:id="@+id/ariseControl"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            android:paddingBottom="10dp"
-            android:paddingTop="10dp"
-            android:progress="0"/>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="30dp"
             android:layout_margin="10dp"
-            android:text="Slant"/>
+            android:progress="0"/>
 
         <SeekBar
             android:id="@+id/slantControl"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            android:paddingBottom="10dp"
-            android:paddingTop="10dp"
+            android:layout_height="30dp"
+            android:layout_margin="10dp"
             android:progress="0"/>
-
-        <Button
-            android:id="@+id/resetBtn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Reset"/>
-
-        <Button
-            android:id="@+id/export_png"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Export PNG"/>
     </LinearLayout>
+
+    <Button
+        android:id="@+id/resetBtn"
+        app:layout_widthPercent="26%"
+        app:layout_heightPercent="6%"
+        app:layout_marginTopPercent="70%"
+        app:layout_marginLeftPercent="72%"
+        android:layout_margin="20dp"
+        android:background="@drawable/button_shape"
+        android:text="Reset"/>
+
+    <Button
+        android:id="@+id/export_png"
+        app:layout_widthPercent="26%"
+        app:layout_heightPercent="6%"
+        app:layout_marginTopPercent="78%"
+        app:layout_marginLeftPercent="72%"
+        android:layout_margin="20dp"
+        android:background="@drawable/button_shape"
+        android:text="Export PNG"/>
+
+    <Button
+        android:id="@+id/export_ttf"
+        app:layout_widthPercent="26%"
+        app:layout_heightPercent="6%"
+        app:layout_marginTopPercent="86%"
+        app:layout_marginLeftPercent="72%"
+        android:layout_margin="20dp"
+        android:background="@drawable/button_shape"
+        android:text="Export TTF"/>
+
+    <ProgressBar
+        android:id="@+id/export_progress"
+        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+        app:layout_widthPercent="26%"
+        android:layout_height="wrap_content"
+        app:layout_marginTopPercent="94%"
+        app:layout_marginLeftPercent="72%"
+        android:visibility="invisible"
+        android:scaleY="3"/>
+
 
     <EditText
         android:id="@+id/sample_text"
         app:layout_widthPercent="70%"
         app:layout_heightPercent="10%"
-        app:layout_marginLeftPercent="30%"
         android:hint="Sample Text"
         android:inputType="text"/>
 
@@ -156,7 +193,6 @@
         android:id="@+id/fontCanvas"
         app:layout_widthPercent="70%"
         app:layout_heightPercent="90%"
-        app:layout_marginLeftPercent="30%"
         app:layout_marginTopPercent="10%"
         android:clickable="true"
         android:background="#ffffff"/>
@@ -164,7 +200,7 @@
     <RelativeLayout
         app:layout_widthPercent="20%"
         android:layout_height="match_parent"
-        app:layout_marginLeftPercent="80%">
+        app:layout_marginLeftPercent="50%">
 
         <Switch
             android:id="@+id/viewSkeletonBtn"

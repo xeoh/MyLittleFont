@@ -9,11 +9,11 @@
         android:orientation="vertical"
         app:layout_widthPercent="30%"
         app:layout_heightPercent="100%"
-        android:background="#bbbbbb">
+        android:background="@color/colorBiright">
 
         <ListView
             android:id="@+id/examine_list_view"
-            android:divider="#bbbbbb"
+            android:divider="@color/colorPrimaryDark"
             android:dividerHeight="4dp"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
