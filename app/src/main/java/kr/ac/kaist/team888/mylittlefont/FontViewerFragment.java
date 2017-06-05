@@ -110,6 +110,7 @@ public class FontViewerFragment extends Fragment {
       TextView fontPreview = (TextView) convertView.findViewById(R.id.font_viewer_item_preview);
       fontPreview.setTypeface(Typeface.createFromFile(file));
       fontPreview.setText(FONT_PREVIEW_TEXT);
+      fontPreview.setTextSize(25);
 
       TextView fontName = (TextView) convertView.findViewById(R.id.font_viewer_item_font_name);
       fontName.setText(file.getName());
@@ -155,8 +156,8 @@ public class FontViewerFragment extends Fragment {
       }
       TextView textView = (TextView) convertView;
       textView.setText(new String(new char[] {(char)getItem(position)}));
-      textView.setTextSize(30);
-      textView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+      textView.setTextSize(25);
+      textView.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
       if (typeface != null) {
         textView.setTypeface(typeface);
       }

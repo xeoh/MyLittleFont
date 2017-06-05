@@ -36,7 +36,7 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
   private static final double CONTRAST_MIN = .1;
   private static final double WIDTH_MIN = 0.7;
   private static final double WIDTH_MAX = 1.3;
-  private static final double SLANT_MAX = 0.3;
+  public static final double SLANT_MAX = 0.3;
   private static final int PRIORITY = 1;
 
   private static final int NEWTON_MAX_EVAL = 100000;

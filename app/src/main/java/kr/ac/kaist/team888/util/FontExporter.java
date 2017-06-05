@@ -1,5 +1,7 @@
 package kr.ac.kaist.team888.util;
 
+import static kr.ac.kaist.team888.locator.Locator.SLANT_MAX;
+
 import android.os.AsyncTask;
 import android.os.Environment;
 
@@ -87,8 +89,13 @@ public class FontExporter extends AsyncTask<String, Double, File> {
     locator.applyContour(weight, roundness, contrast);
     locator.applySlant(slant);
 
-    double regionWidth = locator.locatorRegion.getMaxX()
-        - locator.locatorRegion.getMinX();
+    double slantRadian = slant * Math.PI / 2 * SLANT_MAX;
+    double maxX = locator.locatorRegion.getMaxX()
+        + (locator.locatorRegion.getMaxY() - locator.locatorRegion.getMinY())
+        / (Math.tan(Math.PI / 2 - slantRadian));
+
+    double regionWidth = maxX - locator.locatorRegion.getMinX();
+
     double regionGap = regionWidth * gap;
     Region region = new Region(0,
         regionWidth + regionGap,
