@@ -12,7 +12,6 @@
         android:textAlignment="center"
         android:textSize="30sp"
         android:gravity="center"
-        android:background="#EEEEEE"
         android:layout_alignParentStart="true"
         android:layout_centerHorizontal="true"/>
 
@@ -23,7 +22,6 @@
         android:paddingStart="20dp"
         android:layout_marginEnd="5dp"
         android:gravity="center_vertical"
-        android:background="#EEEEEE"
         android:layout_toEndOf="@id/font_viewer_item_preview"
         android:layout_centerHorizontal="true"/>
 

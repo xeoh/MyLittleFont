@@ -8,45 +8,6 @@
     android:fitsSystemWindows="true"
     tools:openDrawer="start">
 
-    <RelativeLayout
-        android:id="@+id/export_layout"
-        android:visibility="invisible"
-        android:layout_margin="20dp"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <ProgressBar
-            android:id="@+id/export_progress"
-            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-            android:layout_width="100dp"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            android:scaleY="3"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentBottom="true"/>
-
-        <TextView
-            android:id="@+id/export_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            android:textAlignment="viewStart"
-            android:text="Exporting: Example.ttf"
-            android:layout_alignParentStart="true"
-            android:layout_above="@id/export_progress"/>
-
-        <TextView
-            android:id="@+id/export_percent"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            android:textAlignment="viewStart"
-            android:text="100%"
-            android:layout_alignParentBottom="true"
-            android:layout_toEndOf="@id/export_progress"/>
-
-    </RelativeLayout>
-
     <include
         layout="@layout/app_bar_main"
         android:layout_width="match_parent"

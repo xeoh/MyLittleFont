@@ -16,10 +16,11 @@ import java.util.ArrayList;
 
 public class FontLoaderAdapter extends BaseAdapter {
   private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy.MM.dd. HH:mm");
-  private static final char PREVIEW_LETTER = '폰';
+  private static final char PREVIEW_LETTER = '한';
 
   private Context context;
   private ArrayList<FontItem> listViewItems = new ArrayList<>();
+  private boolean preveiw = true;
 
   public FontLoaderAdapter(Context context) {
     this.context = context;
@@ -58,7 +59,14 @@ public class FontLoaderAdapter extends BaseAdapter {
     fontDateView.setText(DATE_FORMAT.format(item.getDatetime()));
 
     // Make a locator for preview.
-    Locator locator = new Locator(PREVIEW_LETTER);
+    Locator locator;
+    if (preveiw) {
+      locator = new Locator(PREVIEW_LETTER);
+    } else {
+      locator = new Locator(PREVIEW_LETTER);
+    }
+    preveiw = !preveiw;
+
     locator.manipulateSkeleton(item.getFlattening(), item.getArise());
     locator.applyCurve(item.getCurve());
     locator.applyWidth(item.getWidth());
