@@ -309,14 +309,16 @@ class OffsetTillerHanson {
     Vector2D vector = currentPoint.subtract(prevPoint);
     Vector2D perpendicularVector = new Vector2D(vector.getY(), -vector.getX());
     Vector2D targetVector = getOffsetTargetVector(perpendicularVector, contrast, offsetVector);
-    return currentPoint.add(delta, perpendicularVector.normalize()
-        .scalarMultiply(targetVector.getNorm()));
+    return currentPoint.add(delta, targetVector);
   }
 
   private static Vector2D getOffsetTargetVector(Vector2D vector, double contrast,
                                                 Vector2D offsetVector) {
     Vector2D unitVector = vector.normalize();
-    return new Vector2D(unitVector.getX() * offsetVector.getX(),
-        contrast * unitVector.getY() * offsetVector.getY());
+    double xRatio = 1 / ((contrast > 1 ? 1 : (2 / contrast - 1)) * offsetVector.getX());
+    double yRatio = 1 / ((contrast > 1 ? contrast / (2 - contrast) : 1) * offsetVector.getY());
+    double length = Math.sqrt(1 / ((unitVector.getX() * unitVector.getX()) / (xRatio * xRatio)
+        + (unitVector.getY() * unitVector.getY()) / (yRatio * yRatio)));
+    return new Vector2D(length, unitVector);
   }
 }

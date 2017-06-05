@@ -33,7 +33,7 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
   private static final int CURVE_GAP = 2;
   private static final double CURVE_TOLERANCE = 1E-4;
   private static final int WEIGHT_DEFAULT = 32;
-  private static final double CONTRAST_MIN = .1;
+  private static final double CONTRAST_MIN = .6;
   private static final double WIDTH_MIN = 0.7;
   private static final double WIDTH_MAX = 1.3;
   private static final double SLANT_MAX = 0.3;
@@ -567,7 +567,7 @@ public class Locator implements FeatureController.OnFeatureChangeListener{
   public void applyContour(double weightControl, double roundnessControl, double contrastControl) {
     double weight = weightControl - .5;
     double roundness = roundnessControl;
-    double contrast = CONTRAST_MIN + contrastControl * 2 * (1 - CONTRAST_MIN);
+    double contrast = contrastControl * (2 - 2 * CONTRAST_MIN) + CONTRAST_MIN;
     contours = new ArrayList<>();
     for (ArrayList<BezierCurve> curves : skeletons) {
       ArrayList<BezierCurve> newCurves = new ArrayList<>();
