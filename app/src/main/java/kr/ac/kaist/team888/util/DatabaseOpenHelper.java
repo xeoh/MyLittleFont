@@ -129,6 +129,6 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
    * @param id id of the font data
    */
   public void deleteItem(int id) {
-    getWritableDatabase().execSQL(String.format(ROW_DELETE, id));
+    getWritableDatabase().execSQL(String.format(ROW_DELETE, TABLE_NAME, KEY_ID, id));
   }
 }
